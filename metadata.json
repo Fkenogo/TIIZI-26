@@ -1,0 +1,8 @@
+{
+  "name": "Tiizi",
+  "description": "Tiizi turns individual workouts into group accountability, while extending support beyond fitness into wellbeing, mutual aid, and community support.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
