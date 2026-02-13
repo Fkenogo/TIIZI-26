@@ -1,6 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { AppView } from '../types';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTiizi } from '../context/AppContext';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -9,12 +11,30 @@ interface Props {
 const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'Active' | 'Pending'>('Active');
   const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [params] = useSearchParams();
+  const memberIdParam = params.get('memberId') || '';
+  const { state, removeMember, addToast, muteMember, unmuteMember, banMember } = useTiizi();
+  const activeGroup = useMemo(() => state.groups.find((g) => g.id === state.activeGroupId), [state.groups, state.activeGroupId]);
+  const navigate = useNavigate();
 
-  const members = [
-    { name: 'Sarah Jenkins', role: 'Co-Admin', streak: '128', img: 'https://picsum.photos/id/65/100/100' },
-    { name: 'Marcus Thorne', role: 'Member', streak: '42', img: 'https://picsum.photos/id/64/100/100' },
-    { name: 'Elena Rodriguez', role: 'Member', streak: '15', img: 'https://picsum.photos/id/40/100/100' },
-  ];
+  const members = useMemo(() => {
+    const memberIds = activeGroup?.memberIds || [];
+    return memberIds.map((id) => ({
+      id,
+      name: state.memberProfiles[id]?.name || (id === state.user.authUid ? state.user.name : `Member ${id.slice(0, 6)}`),
+      role: activeGroup?.adminIds?.includes(id) ? 'Admin' : 'Member',
+      streak: String(state.memberProfiles[id]?.stats?.streak ?? 0),
+      img: state.memberProfiles[id]?.avatar || '/icons/icon-192.svg',
+      isMuted: activeGroup?.mutedMemberIds?.includes(id)
+    }));
+  }, [activeGroup, state.memberProfiles, state.user.authUid, state.user.name]);
+
+  useEffect(() => {
+    if (memberIdParam) {
+      const found = members.find((m) => m.id === memberIdParam);
+      if (found) setSelectedMember(found);
+    }
+  }, [memberIdParam, members]);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
@@ -34,11 +54,11 @@ const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
         <div className="p-5 grid grid-cols-2 gap-4">
           <div className="bg-primary/10 dark:bg-primary/5 p-6 rounded-[32px] border-2 border-primary/5">
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2">Total Members</p>
-            <p className="text-4xl font-black text-primary">1,248</p>
+            <p className="text-4xl font-black text-primary">{members.length}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] border border-slate-50 dark:border-slate-800 shadow-sm">
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2">Active Today</p>
-            <p className="text-4xl font-black">842</p>
+            <p className="text-4xl font-black">0</p>
           </div>
         </div>
 
@@ -66,7 +86,7 @@ const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
               onClick={() => onNavigate(AppView.ADMIN_PENDING_REQUESTS)}
               className={`flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all text-slate-400`}
             >
-              Pending (24)
+              Pending
             </button>
           </div>
         </div>
@@ -78,15 +98,23 @@ const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
             <button className="text-primary text-[10px] font-black uppercase tracking-widest">Export List</button>
           </div>
           <div className="space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
-            {members.map((m, i) => (
-              <div key={i} className="flex items-center gap-4 py-4 group">
+            {members.length === 0 && (
+              <div className="text-sm text-slate-400 py-6">No members yet.</div>
+            )}
+            {members.map((m) => (
+              <div key={m.id} className="flex items-center gap-4 py-4 group">
                 <img className="size-14 rounded-[20px] object-cover ring-4 ring-primary/5" src={m.img} alt={m.name} />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-black text-sm">{m.name}</p>
                     {m.role !== 'Member' && (
-                      <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[8px] font-black uppercase text-slate-500 tracking-widest">
+                      <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-[8px] font-black uppercase text-primary tracking-widest">
                         {m.role}
+                      </span>
+                    )}
+                    {m.isMuted && (
+                      <span className="px-2 py-0.5 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-[8px] font-black uppercase text-slate-500 tracking-widest">
+                        Muted
                       </span>
                     )}
                   </div>
@@ -149,7 +177,7 @@ const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
 
             <div className="space-y-3">
               <button 
-                onClick={() => onNavigate(AppView.ADMIN_MANAGE_ROLES)}
+                onClick={() => navigate(`/${AppView.ADMIN_MANAGE_ROLES}?memberId=${selectedMember.id}`)}
                 className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 transition-colors group"
               >
                 <span className="material-icons-round text-slate-400 group-hover:text-primary">assignment_ind</span>
@@ -160,16 +188,55 @@ const AdminMemberManagementScreen: React.FC<Props> = ({ onNavigate }) => {
                 <span className="material-icons-round text-slate-200">chevron_right</span>
               </button>
 
-              <button className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 transition-colors group">
+              <button 
+                onClick={async () => {
+                  if (!selectedMember) return;
+                  if (selectedMember.isMuted) {
+                    await unmuteMember(selectedMember.id);
+                    addToast('Member unmuted.', 'success');
+                  } else {
+                    await muteMember(selectedMember.id);
+                    addToast('Member muted.', 'success');
+                  }
+                  setSelectedMember(null);
+                }}
+                className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 transition-colors group"
+              >
                 <span className="material-icons-round text-slate-400 group-hover:text-primary">volume_off</span>
                 <div className="text-left flex-1">
-                  <p className="font-black text-sm">Mute in Chat</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Temporarily restrict messaging</p>
+                  <p className="font-black text-sm">{selectedMember.isMuted ? 'Unmute in Chat' : 'Mute in Chat'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                    {selectedMember.isMuted ? 'Restore messaging access' : 'Temporarily restrict messaging'}
+                  </p>
                 </div>
                 <span className="material-icons-round text-slate-200">chevron_right</span>
               </button>
 
-              <button className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-red-50 dark:bg-red-900/10 border-2 border-red-100 dark:border-red-900/20 group hover:bg-red-100 transition-all">
+              <button 
+                onClick={async () => {
+                  if (!selectedMember) return;
+                  await banMember(selectedMember.id);
+                  addToast('Member banned.', 'success');
+                  setSelectedMember(null);
+                }}
+                className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-red-50 dark:bg-red-900/10 border-2 border-red-100 dark:border-red-900/20 group hover:bg-red-100 transition-all"
+              >
+                <span className="material-icons-round text-red-500">block</span>
+                <div className="text-left flex-1">
+                  <p className="font-black text-sm text-red-600">Ban from Group</p>
+                  <p className="text-[10px] font-bold text-red-400 uppercase tracking-tight">Prevent future access</p>
+                </div>
+                <span className="material-icons-round text-red-200">chevron_right</span>
+              </button>
+
+              <button 
+                onClick={async () => {
+                  await removeMember(selectedMember.id);
+                  addToast('Member removed.', 'success');
+                  setSelectedMember(null);
+                }}
+                className="w-full flex items-center gap-5 p-5 rounded-[24px] bg-red-50 dark:bg-red-900/10 border-2 border-red-100 dark:border-red-900/20 group hover:bg-red-100 transition-all"
+              >
                 <span className="material-icons-round text-red-500">person_remove</span>
                 <div className="text-left flex-1">
                   <p className="font-black text-sm text-red-600">Remove from Group</p>

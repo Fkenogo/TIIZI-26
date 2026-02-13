@@ -1,14 +1,28 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
+import { useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const ConsistencyDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
-  // Mock data for heatmap visualization
-  const heatmapData = Array.from({ length: 154 }, () => Math.floor(Math.random() * 4));
+  const { state } = useTiizi();
+  const { data: consistency } = useFirestoreDoc<{
+    heatmap?: number[];
+    loggedDays?: number[];
+    streakDays?: number[];
+    todayDay?: number;
+    activeDays?: number;
+    growthRate?: number;
+    pattern?: number[];
+    patternLabel?: string;
+  }>(state.user.authUid ? ['users', state.user.authUid, 'consistency', 'overview'] : []);
+  const heatmapData = consistency?.heatmap || [];
+  const loggedDays = new Set(consistency?.loggedDays || []);
+  const streakDays = new Set(consistency?.streakDays || []);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-light dark:bg-background-dark text-[#1b140d] dark:text-[#fcfaf8] antialiased font-display">
@@ -22,10 +36,10 @@ const ConsistencyDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
         </button>
         <h2 className="text-lg font-black tracking-tight flex-1 text-center uppercase tracking-widest">Consistency</h2>
         <button 
-          onClick={() => onNavigate(AppView.SHARE_PROGRESS_CARD)}
+          onClick={() => onNavigate((`${AppView.YEAR_IN_REVIEW}?from=${encodeURIComponent(AppView.CONSISTENCY_DASHBOARD)}`) as AppView)}
           className="flex size-10 items-center justify-end text-primary"
         >
-          <span className="material-icons-round">share</span>
+          <span className="material-icons-round">emoji_events</span>
         </button>
       </header>
 
@@ -47,6 +61,9 @@ const ConsistencyDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <div className="bg-white dark:bg-white/5 p-6 rounded-[32px] shadow-sm border border-slate-50 dark:border-white/5 overflow-x-auto hide-scrollbar">
             <div className="grid grid-rows-7 grid-flow-col gap-1.5 h-32 min-w-[580px]">
+              {heatmapData.length === 0 && (
+                <div className="text-sm text-slate-400">No activity data yet.</div>
+              )}
               {heatmapData.map((val, i) => (
                 <div 
                   key={i} 
@@ -97,10 +114,9 @@ const ConsistencyDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               
               {Array.from({ length: 30 }).map((_, i) => {
                 const day = i + 1;
-                // Mock a continuous streak from 5th to 15th
-                const isStreak = day >= 5 && day <= 15;
-                const isLogged = [1, 18, 20, 24, 25, 30].includes(day);
-                const isToday = day === 15;
+                const isStreak = streakDays.has(day);
+                const isLogged = loggedDays.has(day);
+                const isToday = consistency?.todayDay === day;
 
                 return (
                   <div key={i} className="relative h-12 flex items-center justify-center group cursor-pointer">
@@ -144,19 +160,19 @@ const ConsistencyDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-white/10 backdrop-blur-xl rounded-[24px] p-6 border border-white/10">
                   <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">Active Days</span>
-                  <span className="text-3xl font-black block mt-2">17 / 30</span>
+                  <span className="text-3xl font-black block mt-2">{consistency?.activeDays || 0} / 30</span>
                 </div>
                 <div className="bg-white/10 backdrop-blur-xl rounded-[24px] p-6 border border-white/10">
                   <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">Growth Rate</span>
-                  <span className="text-3xl font-black block mt-2">+12%</span>
+                  <span className="text-3xl font-black block mt-2">{consistency?.growthRate || 0}%</span>
                 </div>
                 <div className="bg-white/10 backdrop-blur-xl rounded-[32px] p-8 col-span-2 border border-white/10">
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">Participation Pattern</span>
-                    <span className="text-white font-black text-sm uppercase tracking-tight bg-white/20 px-4 py-1.5 rounded-full italic">High Flow</span>
+                    <span className="text-white font-black text-sm uppercase tracking-tight bg-white/20 px-4 py-1.5 rounded-full italic">{consistency?.patternLabel || '—'}</span>
                   </div>
                   <div className="flex items-end gap-3 h-16 px-1">
-                    {[40, 60, 100, 50, 30, 45, 20].map((h, i) => (
+                    {(consistency?.pattern || []).map((h, i) => (
                       <div key={i} className="flex-1 bg-white/20 rounded-t-lg relative group overflow-hidden">
                         <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg transition-all duration-700" style={{ height: `${h}%` }}></div>
                       </div>

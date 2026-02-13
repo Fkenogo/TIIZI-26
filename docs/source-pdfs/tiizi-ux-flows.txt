@@ -1,0 +1,265 @@
+TIIZI — UX FLOWS,
+WIREFRAMES & COPY (MVP)
+1. CORE UX FLOWS
+FLOW 1: ONBOARDING → FIRST GROUP → FIRST CHALLENGE
+Goal: Get a user into a group and active within minutes.
+1. Welcome Screen
+2. Sign up (phone or email)
+3. Quick profile (name + photo)
+4. Create or Join Group
+5. Join Group Chat
+6. Join or Start Challenge
+7. Log First Workout
+
+FLOW 2: CREATE A GROUP
+1. Tap Create Group
+2. Enter group name
+3. Add short description
+4. Set group privacy (Private / Public)
+5. Generate invite link
+6. Share link
+Result: Group created + group chat opened automatically.
+
+FLOW 3: START A GROUP CHALLENGE
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+1
+
+1. Admin taps Start Challenge
+2. Choose challenge type:
+Group goal
+Competitive
+Streak-based
+3. Select exercise or workout plan
+4. Set duration (7 / 30 / 75 days)
+5. Set goal
+6. Optional: Enable fundraising
+7. Start challenge
+Result: Challenge announcement posted in group feed + chat.
+
+FLOW 4: LOG A WORKOUT (CORE LOOP)
+1. Tap Log Workout
+2. Select exercise
+3. Enter reps or time
+4. Optional note
+5. Submit
+Result:
+Progress updates instantly
+Post added to group feed
+Streak updated
+
+FLOW 5: DONATION (OPTIONAL)
+1. Triggered by:
+Challenge completion
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+2
+
+Milestone
+Manual action
+2. Donation screen opens
+3. User selects amount or enters custom
+4. Select frequency
+5. Confirm
+Result: Thank-you message + quiet confirmation.
+
+2. LOW‑FIDELITY WIREFRAME DESCRIPTIONS
+(These are layout guides for designers / no‑code builders.)
+
+SCREEN: WELCOME
+Logo: Tiizi
+Headline: “Work out together. Stay consistent.”
+CTA: Get Started
+Secondary: I already have an invite
+
+SCREEN: CREATE / JOIN GROUP
+Top
+Title: “Your Groups”
+Body
+Button: Create New Group
+Divider: “or”
+Input: Join with invite link
+
+SCREEN: GROUP HOME
+Header
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+3
+
+Group name
+Member count
+Main Section
+Active challenge card:
+Progress bar
+Days remaining
+CTA: Log Workout
+Tabs
+Feed
+Chat
+Leaderboard
+
+SCREEN: LOG WORKOUT
+Exercise selector (list)
+Input: Reps / Time
+Optional note field
+Button: Log Workout
+
+SCREEN: GROUP CHAT
+Message list
+System messages highlighted
+Input field
+Emoji button
+
+SCREEN: DONATION PROMPT
+Celebration icon
+Message text
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+4
+
+Preset amounts
+Custom amount input
+Frequency selector
+Buttons: Donate / Skip
+
+3. CHAT UX COPY
+Group Chat Intro (System Message)
+Welcome to
+{{Group Name}}
+This is where we push each other, celebrate wins, and stay accountable.
+
+Challenge Start (System Message)
+
+🏁
+
+Challenge Started
+{{Challenge Name}} is live.
+Let’s stay consistent and support each other.
+
+Workout Logged
+
+💪 {{Name}} logged
+{{Exercise}}
+
+Keep it going!
+
+Milestone Reached
+
+🎉
+
+Milestone hit!
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+5
+
+The group just reached {{Milestone}}.
+Great work, team.
+
+Streak Message
+
+🔥 {{Name}} is on a {{X}}‑day streak.
+Consistency wins.
+
+4. DONATION UX COPY
+App Support Prompt (Post‑Challenge)
+
+🙌
+
+Nice work finishing the challenge
+If Tiizi helped you stay consistent, you can support its growth.
+This is optional.
+Buttons:
+Support Tiizi
+Maybe later
+Skip
+
+Donation Amount Screen
+Choose how you’d like to support Tiizi
+Preset buttons:
+KES 500
+KES 1,000
+KES 2,000
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+6
+
+KES 3,000
+KES 5,000
+KES 10,000
+Custom input:
+Enter another amount
+
+Frequency Selector
+How often would you like to contribute?
+Options:
+One‑time
+Monthly
+Annual
+When I complete a challenge
+
+Donation Confirmation
+
+❤️ Thank you for supporting Tiizi.
+Your support helps keep the community growing.
+
+5. FUNDRAISING CHALLENGE COPY
+Challenge Setup Label
+This challenge supports a cause
+
+Member View
+
+🎯
+
+Fitness + Cause Challenge
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+7
+
+Join the challenge.
+Contribute if you’re able.
+Button:
+Contribute
+Skip
+
+6. GROUP WELLNESS FUND COPY
+Group Fund Intro
+
+🤝
+
+Group Support Fund
+This fund is for supporting each other with health or medical needs.
+Contributions are voluntary.
+
+Disclaimer (Shown Clearly)
+Tiizi does not hold or manage funds.
+Contributions are coordinated by the group.
+
+7. TONE & LANGUAGE RULES (IMPORTANT)
+Simple
+Respectful
+No guilt
+No pressure
+Community-first
+Never say:
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+8
+
+Upgrade
+Unlock
+Paywall
+Always say:
+Optional
+Support
+Contribute if you can
+
+TIIZI — UX FLOWS, WIREFRAMES & COPY (MVP)
+
+9
+
+

@@ -7,6 +7,8 @@ interface Props {
 }
 
 const AchievementHubScreen: React.FC<Props> = ({ onNavigate }) => {
+  const source = 'achievements_hub';
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-[#1b140d] dark:text-[#fcfaf8] pb-32 antialiased">
       {/* Sticky Header */}
@@ -21,7 +23,10 @@ const AchievementHubScreen: React.FC<Props> = ({ onNavigate }) => {
                <h1 className="text-2xl font-extrabold tracking-tight">Achievement Hub</h1>
              </div>
           </div>
-          <div onClick={() => onNavigate(AppView.LEVEL_UP_MODAL)} className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full cursor-pointer active:scale-95 transition-transform">
+          <div
+            onClick={() => onNavigate((`${AppView.LEVEL_UP_MODAL}?from=${source}&level=14&xp=1000&targetXp=1000`) as AppView)}
+            className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full cursor-pointer active:scale-95 transition-transform"
+          >
             <span className="material-symbols-outlined text-primary text-sm font-bold">military_tech</span>
             <span className="text-primary font-bold text-sm">Lv. 14</span>
           </div>
@@ -67,11 +72,18 @@ const AchievementHubScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <div className="grid grid-cols-3 gap-x-6 gap-y-10">
             {[
-              { id: 1, label: '7-Day Streak', icon: 'local_fire_department', gradient: 'from-amber-100 to-amber-400', active: true },
-              { id: 2, label: '30-Day Streak', icon: 'workspace_premium', gradient: 'from-orange-100 to-orange-400', active: true },
+              { id: 1, badgeId: 'streak-7', label: '7-Day Streak', icon: 'local_fire_department', gradient: 'from-amber-100 to-amber-400', active: true },
+              { id: 2, badgeId: 'streak-30', label: '30-Day Streak', icon: 'workspace_premium', gradient: 'from-orange-100 to-orange-400', active: true },
               { id: 3, label: '90-Day Streak', icon: 'lock', gradient: 'bg-[#f2e9e0]/30', active: false },
             ].map((badge) => (
-              <div key={badge.id} onClick={() => onNavigate(AppView.ACHIEVEMENT_DETAIL)} className={`flex flex-col items-center gap-4 group cursor-pointer ${!badge.active ? 'opacity-30 grayscale' : ''}`}>
+              <div
+                key={badge.id}
+                onClick={() => {
+                  if (!badge.active || !badge.badgeId) return;
+                  onNavigate((`${AppView.ACHIEVEMENT_DETAIL}?badgeId=${badge.badgeId}&from=${source}`) as AppView);
+                }}
+                className={`flex flex-col items-center gap-4 group cursor-pointer ${!badge.active ? 'opacity-30 grayscale' : ''}`}
+              >
                 <div className={`relative w-full aspect-square rounded-[32px] flex items-center justify-center border-2 transition-all group-hover:scale-105 duration-500 ${badge.active ? 'badge-parallax border-primary bg-gradient-to-br ' + badge.gradient : 'border-dashed border-slate-200 dark:border-[#3d2e1f] ' + badge.gradient}`}>
                   <span className={`material-symbols-outlined text-4xl font-bold ${badge.active ? 'text-primary' : 'text-slate-300'}`}>{badge.icon}</span>
                   {badge.active && (
@@ -91,11 +103,22 @@ const AchievementHubScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <div className="grid grid-cols-3 gap-x-6 gap-y-10">
             {[
-              { id: 4, label: 'First Pledge', icon: 'handshake', gradient: 'from-blue-100 to-blue-400', active: true },
+              { id: 4, badgeId: 'support-first-pledge', label: 'First Pledge', icon: 'handshake', gradient: 'from-blue-100 to-blue-400', active: true },
               { id: 5, label: 'Top Cheerer', icon: 'campaign', gradient: 'from-pink-100 to-pink-400', active: true },
               { id: 6, label: 'Group Mentor', icon: 'group', gradient: 'bg-[#f2e9e0]/30', active: false },
             ].map((badge) => (
-              <div key={badge.id} onClick={() => onNavigate(AppView.ACHIEVEMENT_DETAIL)} className={`flex flex-col items-center gap-4 group cursor-pointer ${!badge.active ? 'opacity-30 grayscale' : ''}`}>
+              <div
+                key={badge.id}
+                onClick={() => {
+                  if (!badge.active) return;
+                  if (badge.badgeId) {
+                    onNavigate((`${AppView.CELEBRATORY_BADGE_DETAIL}?badgeId=${badge.badgeId}&from=${source}`) as AppView);
+                    return;
+                  }
+                  onNavigate((`${AppView.ACHIEVEMENT_DETAIL}?from=${source}`) as AppView);
+                }}
+                className={`flex flex-col items-center gap-4 group cursor-pointer ${!badge.active ? 'opacity-30 grayscale' : ''}`}
+              >
                 <div className={`relative w-full aspect-square rounded-[32px] flex items-center justify-center border-2 transition-all group-hover:scale-105 duration-500 ${badge.active ? 'badge-parallax border-primary bg-gradient-to-br ' + badge.gradient : 'border-dashed border-slate-200 dark:border-[#3d2e1f] ' + badge.gradient}`}>
                   <span className={`material-symbols-outlined text-4xl font-bold ${badge.active ? 'text-white' : 'text-slate-300'}`}>{badge.icon}</span>
                 </div>
@@ -108,7 +131,7 @@ const AchievementHubScreen: React.FC<Props> = ({ onNavigate }) => {
         {/* Detailed Achievements Row */}
         <section className="px-1">
           <button 
-            onClick={() => onNavigate(AppView.ACHIEVEMENT_DETAIL)}
+            onClick={() => onNavigate((`${AppView.ACHIEVEMENT_DETAIL}?badgeId=streak-30&from=${source}`) as AppView)}
             className="w-full bg-white dark:bg-[#2d2218] p-6 rounded-[32px] border border-slate-100 dark:border-[#3d2e1f] shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all"
           >
             <div className="flex items-center gap-4">

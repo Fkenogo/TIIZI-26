@@ -1,0 +1,56 @@
+TERMS, DISCLAIMERS & TRUST
+COPY (MVP)
+This section defines clear trust boundaries. Copy should appear during
+onboarding and in settings.
+
+9.1 General Use Disclaimer
+Tiizi is a fitness and wellbeing community platform.
+You are responsible for your own health, safety, and activity choices.
+
+9.2 Health Disclaimer
+Tiizi does not provide medical advice.
+Always consult a qualified professional before starting a new fitness routine.
+
+9.3 Workout Responsibility
+Exercises and workout plans are provided for general guidance only.
+Perform activities at your own pace and ability.
+
+9.4 Donations Disclaimer (Platform Support)
+Donations made to support Tiizi are voluntary.
+Donating does not unlock features or create special privileges.
+
+9.5 Fundraising & Group Causes Disclaimer
+Fundraising challenges and group causes are created and managed by users.
+Tiizi does not verify, manage, or distribute funds for these causes.
+
+TERMS, DISCLAIMERS & TRUST COPY (MVP)
+
+1
+
+9.6 Group Wellness / Medical Fund Disclaimer
+Tiizi does not hold, store, or transfer money.
+Any contributions toward group wellness or medical support are coordinated
+outside the app.
+
+9.7 Privacy & Data Trust Copy
+Your activity data is visible only to the groups and members you choose.
+Tiizi does not sell your personal data.
+
+9.8 Community Conduct
+Respect each other.
+No harassment, pressure, or shaming.
+Group admins are responsible for moderating their groups.
+
+NEXT STEPS
+I can now:
+Convert notification rules into exact no-code logic
+Design settings screens for notification controls
+Draft full legal terms with a lawyer-ready structure
+Create trust & safety onboarding screens
+Say the word and we continue.
+
+TERMS, DISCLAIMERS & TRUST COPY (MVP)
+
+2
+
+

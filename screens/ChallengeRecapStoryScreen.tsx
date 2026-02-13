@@ -1,12 +1,61 @@
 
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
+import { exportNodeAsPng } from '../components/exportImage';
+import { ChallengeRecapPayload, NAV_STATE_KEYS, readNavState } from '../utils/navigationState';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const ChallengeRecapStoryScreen: React.FC<Props> = ({ onNavigate }) => {
+  const { addToast } = useTiizi();
+  const recap = readNavState<ChallengeRecapPayload>(NAV_STATE_KEYS.challengeRecap);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const progressText = recap?.challengeProgress ?? '';
+  const title = recap?.challengeTitle ?? '';
+  const groupName = recap?.groupName ?? '';
+  const totalMinutes = recap?.totalMinutes ? recap.totalMinutes.replace(/ mins$/i, '') : '';
+  const activeMembers = recap?.activeMembers ?? '';
+  const highlights = useMemo(() => {
+    if (!recap) return [];
+    if (recap.highlights && recap.highlights.length > 0) return recap.highlights;
+    return [
+      recap.totalMinutes ? { label: 'Total Minutes', val: totalMinutes } : null,
+      recap.activeMembers ? { label: 'Active Members', val: activeMembers } : null
+    ].filter(Boolean) as Array<{ label: string; val: string; icon?: string }>;
+  }, [recap, totalMinutes, activeMembers]);
+  const progressValue = Number(String(progressText).replace('%', ''));
+  const progressOffset = Number.isFinite(progressValue) ? 402 - (402 * Math.min(100, progressValue)) / 100 : 402;
+
+  const handleShare = async () => {
+    const text = `${groupName} crushed ${title} with ${progressText} progress!`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Tiizi Challenge Recap', text, url: window.location.href });
+        addToast('Share sheet opened', 'info');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+        addToast('Recap copied for sharing');
+      } else {
+        addToast('Sharing not supported on this device', 'error');
+      }
+    } catch {
+      addToast('Could not share recap', 'error');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!cardRef.current) return;
+    try {
+      await exportNodeAsPng(cardRef.current, { fileName: 'tiizi-challenge-recap.png', backgroundColor: '#f8f7f6' });
+      addToast('Recap image saved');
+    } catch {
+      addToast('Could not save image', 'error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display flex flex-col antialiased">
       <header className="flex items-center p-4 pt-12 pb-2 justify-between shrink-0">
@@ -17,11 +66,17 @@ const ChallengeRecapStoryScreen: React.FC<Props> = ({ onNavigate }) => {
           <span className="material-icons-round text-2xl">close</span>
         </button>
         <h2 className="text-lg font-black tracking-tight flex-1 text-center uppercase tracking-widest pr-12">Share Recap</h2>
-        <span className="material-icons-round text-primary absolute right-6">share</span>
+        <button onClick={handleShare} className="material-icons-round text-primary absolute right-6">share</button>
       </header>
 
       <main className="flex-1 px-6 pt-2 pb-40">
-        <div className="relative aspect-[9/16] w-full flex flex-col items-center overflow-hidden rounded-[48px] bg-gradient-to-b from-primary via-primary/90 to-background-dark p-10 shadow-2xl ring-8 ring-primary/10">
+        {!recap && (
+          <div className="rounded-[32px] bg-white/90 dark:bg-zinc-900/80 border border-slate-200 dark:border-slate-700 p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            No recap data found. Share a recap from the challenge summary first.
+          </div>
+        )}
+        {recap && (
+        <div ref={cardRef} className="relative aspect-[9/16] w-full flex flex-col items-center overflow-hidden rounded-[48px] bg-gradient-to-b from-primary via-primary/90 to-background-dark p-10 shadow-2xl ring-8 ring-primary/10">
           {/* Background Decoration */}
           <div className="absolute top-[-10%] right-[-20%] size-80 rounded-full bg-white/10 blur-[80px]"></div>
           <div className="absolute bottom-[-10%] left-[-20%] size-80 rounded-full bg-primary/30 blur-[80px]"></div>
@@ -35,18 +90,18 @@ const ChallengeRecapStoryScreen: React.FC<Props> = ({ onNavigate }) => {
 
           <div className="relative z-10 mt-12 w-full rounded-[40px] bg-white/95 dark:bg-background-dark/95 p-8 text-center shadow-2xl space-y-8 border-4 border-white/20">
             <div className="space-y-1">
-              <h3 className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Morning Warriors</h3>
-              <p className="text-2xl font-black leading-tight text-[#1b140d] dark:text-white">Crushed the 30-Day Plank Challenge!</p>
+              <h3 className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">{groupName}</h3>
+              <p className="text-2xl font-black leading-tight text-[#1b140d] dark:text-white">Crushed the {title}!</p>
             </div>
 
             <div className="flex flex-col items-center justify-center">
               <div className="relative">
                 <svg className="size-36 -rotate-90">
                   <circle className="text-gray-100 dark:text-zinc-800" cx="72" cy="72" fill="transparent" r="64" stroke="currentColor" strokeWidth="12"></circle>
-                  <circle className="text-primary" cx="72" cy="72" fill="transparent" r="64" stroke="currentColor" strokeDasharray="402" strokeDashoffset="0" strokeLinecap="round" strokeWidth="12"></circle>
+                  <circle className="text-primary" cx="72" cy="72" fill="transparent" r="64" stroke="currentColor" strokeDasharray="402" strokeDashoffset={progressOffset} strokeLinecap="round" strokeWidth="12"></circle>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-black text-[#1b140d] dark:text-white">102%</span>
+                  <span className="text-3xl font-black text-[#1b140d] dark:text-white">{progressText}</span>
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-1">Goal Met</span>
                 </div>
               </div>
@@ -54,10 +109,7 @@ const ChallengeRecapStoryScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
 
           <div className="relative z-10 mt-8 grid w-full grid-cols-2 gap-4">
-            {[
-              { label: 'Total Minutes', val: '4,500' },
-              { label: 'Active Members', val: '42' }
-            ].map((s, i) => (
+            {highlights.slice(0, 2).map((s, i) => (
               <div key={i} className="flex flex-col items-center justify-center rounded-[32px] bg-white/90 dark:bg-zinc-900/90 py-6 shadow-xl backdrop-blur-xl border border-white/20">
                 <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1">{s.label}</p>
                 <p className="text-2xl font-black text-primary leading-none">{s.val}</p>
@@ -75,20 +127,23 @@ const ChallengeRecapStoryScreen: React.FC<Props> = ({ onNavigate }) => {
             
             <div className="flex flex-col items-center gap-2 group cursor-pointer">
               <div className="size-20 rounded-[28px] bg-white p-3 shadow-2xl transition-transform group-hover:scale-110">
-                <img className="size-full grayscale opacity-80" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=tiizi-join" alt="QR" />
+                {recap.joinUrl && (
+                  <img className="size-full grayscale opacity-80" src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(recap.joinUrl)}`} alt="QR" />
+                )}
               </div>
               <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Join our group</p>
             </div>
           </div>
         </div>
+        )}
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 z-50 flex flex-col gap-3">
-        <button className="w-full bg-primary hover:bg-orange-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
+        <button onClick={handleSave} className="w-full bg-primary hover:bg-orange-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
           <span className="material-icons-round font-black">download</span>
           Save Image
         </button>
-        <button className="w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] text-primary/80 bg-primary/5 rounded-2xl hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
+        <button onClick={handleShare} className="w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] text-primary/80 bg-primary/5 rounded-2xl hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
           <span className="material-icons-round text-base">send</span>
           Share to Instagram Story
         </button>

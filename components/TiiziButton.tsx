@@ -13,19 +13,21 @@ const TiiziButton: React.FC<ButtonProps> = ({
   fullWidth = true, 
   icon, 
   className = '', 
+  type = 'button',
   ...props 
 }) => {
-  const baseStyles = "flex items-center justify-center gap-2 font-bold py-4 px-6 rounded-2xl transition-all active:scale-[0.98]";
+  const baseStyles = "flex items-center justify-center gap-2 font-semibold py-3.5 px-5 rounded-2xl transition-all active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-primary";
   
   const variants = {
-    primary: "bg-primary text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600",
-    secondary: "bg-secondary text-white shadow-lg shadow-green-950/20 hover:bg-green-700",
-    outline: "border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800",
-    ghost: "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+    primary: "bg-primary text-white border border-primary shadow-lg shadow-orange-500/20 hover:bg-orange-600 disabled:opacity-60",
+    secondary: "bg-secondary text-white border border-secondary shadow-lg shadow-green-950/20 hover:bg-green-700 disabled:opacity-60",
+    outline: "border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:border-primary/40",
+    ghost: "bg-transparent border border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
   };
 
   return (
     <button 
+      type={type}
       className={`${baseStyles} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...props}
     >

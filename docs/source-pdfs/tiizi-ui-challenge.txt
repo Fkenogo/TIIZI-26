@@ -1,0 +1,80 @@
+UI - Challenge
+App Features & Functionalities
+1. Home Dashboard
+"Get Started" Banner: A prominent call-to-action to "Create Challenge."
+Suggested Challenges: A horizontal carousel of curated challenges (e.g.,
+"Daily Push-Up Challenge") that users can join quickly.
+Navigation Bar: Bottom navigation containing five primary tabs:
+Home: Dashboard and discovery.
+Profile: User stats and personal info.
+Quick Action (+): Central button to log data or create content.
+Leaderboard/Progress: Visual icon (mountains) likely for tracking ranks.
+Chat: Community or peer-to-peer messaging.
+
+2. Challenge Creation Flow
+Users can build custom challenges with the following parameters:
+Visuals: Ability to upload/set a cover image for the challenge.
+Metadata: Fields for "Name Your Challenge" and "Description" (up to 500
+characters).
+Challenge Types: * Weekly: Recurring goals every week.
+Cumulative: Total goal to be reached by the end date.
+Daily: Specific tasks to be completed every single day.
+Duration: Selectable Start Date, Number of Weeks, and automatic calculation
+of End Date.
+Activities: Dynamic list where users can add multiple exercises.
+Metrics: Selection between Minutes, Hours, Miles, Kilometers, or Reps.
+
+UI - Challenge
+
+1
+
+Pre-set Library: Dropdown includes Bench Press, Bicep Curls, Boxing,
+Burpees, Running, etc.
+Social Good: "Support a Cause" toggle allowing users to link a charity name
+and URL.
+
+3. Discovery & Filtering
+A comprehensive search/browse page for challenges with multi-select filters:
+Type: Filter by Weekly, Cumulative, or Daily.
+Difficulty: Beginner, Intermediate, or Advanced.
+Duration: 1-2 weeks, 2-4 weeks, or 4+ weeks.
+Body Focus: Cardio, Resistance, Mobility, Core, Upper/Lower body.
+Equipment: None, Minimal, or Gym Required.
+
+Specifications for Non-Code AI Developer
+Goal: Create a mobile fitness app that allows users to create and participate in
+fitness challenges.
+1. Database Schema (Tables):
+Users: ID, Name, Bio, Profile Image.
+Challenges: ID, Title, Description, Image_URL, Type (Enum: Daily, Weekly,
+Cumulative), Start_Date, End_Date, Difficulty, Focus_Area,
+Equipment_Required.
+Activities: ID, Challenge_ID, Activity_Name, Target_Value, Metric_Unit (Reps,
+KM, etc.).
+User_Challenges: Junction table for users joining challenges.
+2. Key Screens & UI Requirements:
+Home Screen: Use a Hero Section for "Create Challenge." Implement
+a Horizontal List/Repeater for "Suggested Challenges."
+Create Challenge Form:
+
+UI - Challenge
+
+2
+
+Implement Conditional Logic: If "Support a Charity" is toggled ON, show
+"Charity Name" and "URL" fields.
+Dynamic Inputs: Allow users to "Add Another Activity" which clones the
+activity input group (Name, Target, Metric).
+Browse Screen: Create a Filter Bar using dropdown menus. The list below
+should update in real-time based on the selected categories.
+3. Workflow Logic:
+When a user clicks "Proceed to Create" from a Suggested Challenge, use
+a Global Variable or URL Parameterto pass the challenge data into the "Create
+Challenge" form to pre-populate all fields.
+Calculate the End Date automatically: Start Date + (Number of Weeks * 7 days) .
+
+UI - Challenge
+
+3
+
+

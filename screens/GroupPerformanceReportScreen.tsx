@@ -1,12 +1,41 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
+import { useFirestoreCollection, useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
+  const { state } = useTiizi();
+  const { data: report } = useFirestoreDoc<{
+    growthPct?: number;
+    progressPct?: number;
+    workoutsTotal?: number;
+    workoutsDelta?: number;
+    peakDays?: number[];
+    pledgeTotal?: number;
+    pledgeTrendPct?: number;
+    impactLabel?: string;
+  }>(state.activeGroupId ? ['groups', state.activeGroupId, 'performanceReport', 'summary'] : []);
+  const { items: leaders } = useFirestoreCollection<{ id: string; name?: string; val?: string; rank?: number; avatar?: string; medal?: string }>(
+    state.activeGroupId ? ['groups', state.activeGroupId, 'consistencyLeaders'] : []
+  );
+  const shareReport = async () => {
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Tiizi Performance Report', text: 'Group performance snapshot', url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch {
+      // no-op: user cancelled share
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
       {/* Top App Bar */}
@@ -19,7 +48,7 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
             <span className="material-icons-round text-primary">arrow_back_ios_new</span>
           </button>
           <h1 className="text-lg font-black tracking-tight uppercase tracking-widest">Performance Report</h1>
-          <button className="size-11 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onClick={shareReport} className="size-11 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
             <span className="material-icons-round text-primary">share</span>
           </button>
         </div>
@@ -36,14 +65,14 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
               </div>
               <div>
                 <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Group Growth</p>
-                <p className="text-4xl font-black tracking-tighter">15% <span className="text-lg font-bold text-slate-400">UP</span></p>
+                <p className="text-4xl font-black tracking-tighter">{report?.growthPct || 0}% <span className="text-lg font-bold text-slate-400">UP</span></p>
               </div>
             </div>
             <div className="w-full bg-slate-50 dark:bg-slate-900 h-3 rounded-full overflow-hidden mb-6 shadow-inner">
-              <div className="bg-primary h-full rounded-full shadow-[0_0_12px_rgba(211,109,33,0.4)]" style={{ width: '75%' }}></div>
+              <div className="bg-primary h-full rounded-full shadow-[0_0_12px_rgba(211,109,33,0.4)]" style={{ width: `${report?.progressPct || 0}%` }}></div>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-base leading-relaxed font-medium">
-              Your group members completed <span className="font-black text-slate-900 dark:text-white">1,240</span> total workouts this month, surpassing last month's record by 186 sessions.
+              Your group members completed <span className="font-black text-slate-900 dark:text-white">{report?.workoutsTotal || 0}</span> total workouts this month, surpassing last month's record by {report?.workoutsDelta || 0} sessions.
             </p>
             <div className="absolute top-[-20%] right-[-10%] size-32 bg-primary/5 rounded-full blur-3xl"></div>
           </div>
@@ -62,8 +91,7 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
               ))}
             </div>
             <div className="grid grid-cols-7 gap-3">
-              {Array.from({ length: 28 }).map((_, i) => {
-                const intensity = Math.floor(Math.random() * 4);
+              {(report?.peakDays || []).map((intensity, i) => {
                 return (
                   <div 
                     key={i} 
@@ -90,25 +118,24 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
         <section>
           <div className="flex items-center justify-between mb-8 px-1">
             <h3 className="text-lg font-black tracking-tight">Consistency Leaders</h3>
-            <button className="text-primary text-[10px] font-black uppercase tracking-widest">Full Rank →</button>
+            <button onClick={() => onNavigate(AppView.LEADERBOARD)} className="text-primary text-[10px] font-black uppercase tracking-widest">Full Rank →</button>
           </div>
           <div className="space-y-4">
-            {[
-              { name: 'Alex Rivera', val: '28/30 Days', rank: 1, img: 'https://picsum.photos/id/64/100/100', medal: '🥇' },
-              { name: 'Sarah Jenkins', val: '26/30 Days', rank: 2, img: 'https://picsum.photos/id/65/100/100', medal: '🥈' },
-              { name: 'Marcus Chen', val: '25/30 Days', rank: 3, img: 'https://picsum.photos/id/11/100/100', medal: '🥉' }
-            ].map((m, i) => (
-              <div key={i} className="flex items-center gap-5 p-5 rounded-[32px] bg-white dark:bg-slate-800/40 shadow-sm border border-slate-50 dark:border-white/5 active:scale-[0.98] transition-all">
+            {leaders.length === 0 && (
+              <div className="text-sm text-slate-400">No leader data yet.</div>
+            )}
+            {leaders.map((m) => (
+              <div key={m.id} className="flex items-center gap-5 p-5 rounded-[32px] bg-white dark:bg-slate-800/40 shadow-sm border border-slate-50 dark:border-white/5 active:scale-[0.98] transition-all">
                 <div className="relative shrink-0">
-                  <img src={m.img} alt={m.name} className="size-14 rounded-2xl object-cover grayscale" />
-                  <div className="absolute -top-2 -right-2 text-xl filter drop-shadow-md">{m.medal}</div>
+                  <img src={m.avatar || '/icons/icon-192.svg'} alt={m.name || 'Member'} className="size-14 rounded-2xl object-cover grayscale" />
+                  <div className="absolute -top-2 -right-2 text-xl filter drop-shadow-md">{m.medal || ''}</div>
                 </div>
                 <div className="flex-1">
-                  <p className="font-black text-base uppercase tracking-tight">{m.name}</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{m.val} Active</p>
+                  <p className="font-black text-base uppercase tracking-tight">{m.name || 'Member'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{m.val || ''} Active</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-primary font-black text-xl italic tracking-tighter">#{m.rank}</p>
+                  <p className="text-primary font-black text-xl italic tracking-tighter">#{m.rank || 0}</p>
                 </div>
               </div>
             ))}
@@ -128,7 +155,7 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
               <div className="flex justify-between items-start mb-10">
                 <div>
                   <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.3em]">Total Pledges</p>
-                  <p className="text-5xl font-black mt-2 tracking-tighter">$2,450</p>
+                  <p className="text-5xl font-black mt-2 tracking-tighter">${report?.pledgeTotal || 0}</p>
                 </div>
                 <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-xl shadow-xl border border-white/20">
                   <span className="material-icons-round text-3xl">volunteer_activism</span>
@@ -139,12 +166,12 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
                   <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Pledge Trend</p>
                   <div className="flex items-center gap-3 mt-2">
                     <span className="material-icons-round text-emerald-400 text-lg">trending_up</span>
-                    <span className="text-lg font-black">+12.4%</span>
+                    <span className="text-lg font-black">{report?.pledgeTrendPct || 0}%</span>
                   </div>
                 </div>
                 <div className="bg-white/10 rounded-[24px] p-6 backdrop-blur-xl border border-white/10">
                   <p className="text-[9px] font-black uppercase text-white/50 tracking-widest">Impact</p>
-                  <p className="text-base font-black mt-2 leading-tight">45 Trees Planted</p>
+                  <p className="text-base font-black mt-2 leading-tight">{report?.impactLabel || '—'}</p>
                 </div>
               </div>
             </div>
@@ -154,7 +181,7 @@ const GroupPerformanceReportScreen: React.FC<Props> = ({ onNavigate }) => {
 
       {/* Persistent Action */}
       <div className="fixed bottom-0 left-0 right-0 p-6 pt-2 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 to-transparent z-50 max-w-md mx-auto">
-        <button className="w-full bg-primary hover:bg-orange-600 text-white font-black py-5 rounded-[28px] shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 transition-all active:scale-95 uppercase tracking-widest text-sm">
+        <button onClick={shareReport} className="w-full bg-primary hover:bg-orange-600 text-white font-black py-5 rounded-[28px] shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 transition-all active:scale-95 uppercase tracking-widest text-sm">
           <span className="material-icons-round">download</span>
           Export Full Report
         </button>

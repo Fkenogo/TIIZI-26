@@ -1,0 +1,38 @@
+import { AppView } from '../types';
+
+export const CORE_MVP_VIEWS = new Set<AppView>([
+  AppView.LOGIN,
+  AppView.GROUPS_LIST,
+  AppView.GROUP_HOME,
+  AppView.GROUP_CHAT,
+  AppView.GROUP_FEED,
+  AppView.CHALLENGES_LIST,
+  AppView.CREATE_CHALLENGE_TYPE,
+  AppView.CREATE_CHALLENGE_EXERCISE,
+  AppView.CREATE_CHALLENGE_DURATION,
+  AppView.CREATE_CHALLENGE_DETAILS,
+  AppView.SETUP_CHALLENGE,
+  AppView.LOG_WORKOUT,
+  AppView.LEADERBOARD,
+  AppView.SUPPORT_FUND,
+  AppView.PLEDGE_MODAL,
+  AppView.PLEDGE_RECORDED,
+  AppView.DONATION_THANK_YOU,
+  AppView.NOTIFICATIONS,
+  AppView.PROFILE,
+  AppView.SETTINGS,
+  AppView.EXERCISE_LIBRARY,
+  AppView.EXERCISE_DETAIL,
+  AppView.GROUP_INVITE_LANDING,
+  AppView.GROUP_JOIN_SHEET,
+  AppView.REQUEST_TO_JOIN_PRIVATE,
+  AppView.FIND_GROUPS,
+  AppView.SUPPORT_REQUEST,
+  AppView.SUPPORT_REQUEST_DETAIL,
+  AppView.ADMIN_DASHBOARD,
+  AppView.ADMIN_EXERCISE_ENGINE,
+]);
+
+export const CORE_MVP_ENABLED = import.meta.env.VITE_CORE_MVP_MODE !== 'false';
+
+export const isCoreMvpView = (view: AppView) => CORE_MVP_VIEWS.has(view);

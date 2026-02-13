@@ -1,25 +1,52 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useTiizi } from '../context/AppContext';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const YearInReviewScreen: React.FC<Props> = ({ onNavigate }) => {
+  const [params] = useSearchParams();
+  const { addToast } = useTiizi();
+  const from = params.get('from') || AppView.PROFILE;
+
+  const handleShare = async () => {
+    const text = 'My 2024 Tiizi Year in Review';
+    const url = `${window.location.origin}/${AppView.YEAR_IN_REVIEW}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Tiizi Year in Review', text, url });
+        addToast('Share sheet opened', 'info');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        addToast('Share link copied');
+      } else {
+        addToast('Sharing not supported on this device', 'error');
+      }
+    } catch {
+      addToast('Could not share right now', 'error');
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-[#1b140d] dark:text-[#f8f7f6] antialiased pb-40">
       {/* Top App Bar */}
       <div className="sticky top-0 z-50 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 pt-12 pb-4 justify-between border-b border-[#f3ede7]/20">
         <button 
-          onClick={() => onNavigate(AppView.PROFILE)}
+          onClick={() => onNavigate(from as AppView)}
           className="text-[#1b140d] dark:text-[#f8f7f6] flex size-10 shrink-0 items-center justify-center cursor-pointer active:scale-90 transition-transform"
         >
           <span className="material-icons-round">close</span>
         </button>
         <h2 className="text-[#1b140d] dark:text-[#f8f7f6] text-sm font-black uppercase tracking-widest flex-1 text-center">Your Year on Tiizi</h2>
         <div className="flex w-10 items-center justify-end">
-          <button className="flex size-10 items-center justify-center rounded-full bg-transparent text-primary">
+          <button
+            onClick={handleShare}
+            className="flex size-10 items-center justify-center rounded-full bg-transparent text-primary"
+          >
             <span className="material-icons-round">share</span>
           </button>
         </div>
@@ -89,14 +116,17 @@ const YearInReviewScreen: React.FC<Props> = ({ onNavigate }) => {
                   Beyond the sweat, you showed up for your neighborhood. You supported <span className="font-black text-primary underline decoration-primary/20 underline-offset-4 tracking-tight">8 community causes</span> this year.
                 </p>
               </div>
-              <button className="w-full h-14 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 active:scale-95 transition-all">
+              <button
+                onClick={() => onNavigate((`${AppView.SUPPORT_HISTORY}?tab=pledges`) as AppView)}
+                className="w-full h-14 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 active:scale-95 transition-all"
+              >
                 View Impact Gallery
               </button>
             </div>
             
             <div className="mt-10 relative">
                <div className="w-full aspect-[4/3] rounded-[32px] overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl">
-                 <img className="size-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000" src="https://picsum.photos/id/160/600/450" alt="Volunteering" />
+                 <div className="size-full bg-gradient-to-br from-primary/10 via-transparent to-primary/5 group-hover:opacity-90 transition-all duration-1000"></div>
                </div>
                <div className="absolute -bottom-4 -right-4 size-20 bg-white dark:bg-slate-900 rounded-[20px] shadow-2xl flex items-center justify-center border-2 border-primary/20">
                  <span className="text-2xl">🌱</span>
@@ -118,17 +148,21 @@ const YearInReviewScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <div className="flex gap-6 overflow-x-auto px-8 pb-4 no-scrollbar">
             {[
-              { label: 'Early Riser', icon: 'workspace_premium', grad: 'from-yellow-400 to-orange-500' },
-              { label: 'Goal Crusher', icon: 'speed', grad: 'from-emerald-400 to-teal-500' },
-              { label: 'Pillar', icon: 'favorite', grad: 'from-pink-500 to-rose-600' },
-              { label: 'Elite', icon: 'military_tech', grad: 'from-violet-500 to-indigo-600' }
+              { label: 'Early Riser', icon: 'workspace_premium', grad: 'from-yellow-400 to-orange-500', route: `${AppView.BADGE_DETAIL_MODAL}?badgeId=fitness-morning&from=year_in_review` },
+              { label: 'Goal Crusher', icon: 'speed', grad: 'from-emerald-400 to-teal-500', route: `${AppView.BADGE_DETAIL_MODAL}?badgeId=streak-30&from=year_in_review` },
+              { label: 'Pillar', icon: 'favorite', grad: 'from-pink-500 to-rose-600', route: `${AppView.BADGE_DETAIL_MODAL}?badgeId=aid-big-heart&from=year_in_review` },
+              { label: 'Elite', icon: 'military_tech', grad: 'from-violet-500 to-indigo-600', route: AppView.MODERN_ACHIEVEMENTS_HUB }
             ].map((badge, i) => (
-              <div key={i} className="flex flex-col items-center min-w-[120px] gap-4 group cursor-pointer">
+              <button
+                key={i}
+                onClick={() => onNavigate(badge.route as AppView)}
+                className="flex flex-col items-center min-w-[120px] gap-4 group cursor-pointer"
+              >
                 <div className={`size-24 rounded-[32px] bg-gradient-to-tr ${badge.grad} flex items-center justify-center shadow-xl shadow-black/10 border-4 border-white dark:border-slate-800 group-hover:scale-110 transition-transform duration-500`}>
                   <span className="material-icons-round text-white text-5xl drop-shadow-lg font-variation-fill">{badge.icon}</span>
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-center opacity-80">{badge.label}</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -148,7 +182,7 @@ const YearInReviewScreen: React.FC<Props> = ({ onNavigate }) => {
       {/* Bottom Sticky Action */}
       <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-background-light via-background-light/95 to-transparent dark:from-background-dark dark:via-background-dark/95 z-50 max-w-md mx-auto">
         <button 
-          onClick={() => onNavigate(AppView.SHARE_PROGRESS_CARD)}
+          onClick={() => onNavigate((`${AppView.SHARE_PROGRESS_CARD}?mode=annual&source=year_in_review`) as AppView)}
           className="w-full h-16 bg-primary hover:bg-orange-600 text-white flex items-center justify-center gap-4 rounded-[28px] shadow-2xl shadow-primary/30 transition-all active:scale-95 group"
         >
           <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">ios_share</span>

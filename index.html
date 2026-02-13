@@ -4,11 +4,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#D36D21" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Tiizi" />
     <title>Tiizi - Group Fitness & Wellbeing</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <script>
@@ -25,7 +32,7 @@
               "card-dark": "#1F2937",
             },
             fontFamily: {
-              display: ["Lexend", "sans-serif"],
+              display: ["Inter", "sans-serif"],
               sans: ["Inter", "sans-serif"],
             },
             borderRadius: {
@@ -38,15 +45,58 @@
       };
     </script>
     <style>
+      :root {
+        --tiizi-bg: #f4f6f8;
+        --tiizi-surface: #ffffff;
+        --tiizi-surface-muted: #f8fafc;
+        --tiizi-text-strong: #0f172a;
+        --tiizi-text: #1e293b;
+        --tiizi-text-muted: #475569;
+        --tiizi-border: #cbd5e1;
+        --tiizi-border-strong: #94a3b8;
+        --tiizi-focus: #d36d21;
+        --tiizi-focus-ring: rgba(211, 109, 33, 0.22);
+        --tiizi-danger: #b91c1c;
+      }
+      .dark {
+        --tiizi-bg: #0f172a;
+        --tiizi-surface: #1f2937;
+        --tiizi-surface-muted: #111827;
+        --tiizi-text-strong: #f8fafc;
+        --tiizi-text: #e2e8f0;
+        --tiizi-text-muted: #94a3b8;
+        --tiizi-border: #334155;
+        --tiizi-border-strong: #475569;
+        --tiizi-focus: #d36d21;
+        --tiizi-focus-ring: rgba(211, 109, 33, 0.3);
+        --tiizi-danger: #f87171;
+      }
       body {
         font-family: 'Inter', sans-serif;
         -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+        color: var(--tiizi-text);
+        background: var(--tiizi-bg);
       }
       .font-display {
-        font-family: 'Lexend', sans-serif;
+        font-family: 'Inter', sans-serif;
       }
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Lexend', sans-serif;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+      }
+      #root {
+        min-height: 100dvh;
+      }
+      .font-black {
+        font-weight: 600 !important;
+      }
+      .uppercase {
+        text-transform: none !important;
+        letter-spacing: 0.02em !important;
+      }
+      .italic {
+        font-style: normal !important;
       }
       .ios-shadow {
         box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
@@ -55,6 +105,13 @@
         display: none;
       }
       .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
@@ -70,6 +127,106 @@
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         transition-duration: 300ms;
       }
+      /* Global accessibility baseline */
+      h1, h2, h3, h4 {
+        color: var(--tiizi-text-strong);
+      }
+      p, label, span, li {
+        color: inherit;
+      }
+      .text-slate-300, .text-slate-400, .text-gray-400 {
+        color: var(--tiizi-text-muted) !important;
+      }
+      .text-\[8px\], .text-\[9px\], .text-\[10px\] {
+        font-size: 12px !important;
+        letter-spacing: 0.01em !important;
+      }
+      .bg-white {
+        background-color: var(--tiizi-surface) !important;
+      }
+      .bg-slate-50 {
+        background-color: var(--tiizi-surface-muted) !important;
+      }
+      .border-slate-50,
+      .border-slate-100,
+      .border-gray-100,
+      .border-black\/5 {
+        border-color: var(--tiizi-border) !important;
+      }
+      [class*="rounded"] {
+        border-color: var(--tiizi-border);
+      }
+      article,
+      [class*="shadow-sm"],
+      [class*="shadow-md"] {
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(15, 23, 42, 0.04);
+      }
+
+      /* Inputs: visible, readable, focusable */
+      input:not([type="checkbox"]):not([type="radio"]),
+      textarea,
+      select {
+        background: var(--tiizi-surface) !important;
+        border: 1px solid var(--tiizi-border) !important;
+        color: var(--tiizi-text-strong) !important;
+        border-radius: 14px;
+        min-height: 44px;
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--tiizi-text-muted) !important;
+        opacity: 0.9 !important;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none !important;
+        border-color: var(--tiizi-focus) !important;
+        box-shadow: 0 0 0 3px var(--tiizi-focus-ring) !important;
+      }
+      .input-error,
+      [aria-invalid="true"] {
+        border-color: var(--tiizi-danger) !important;
+        box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.15) !important;
+      }
+
+      /* Buttons: clearly actionable */
+      button {
+        min-height: 40px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+      }
+      button:not([class*="bg-"]):not([class*="text-primary"]) {
+        background: var(--tiizi-surface-muted);
+        border: 1px solid var(--tiizi-border-strong);
+        color: var(--tiizi-text-strong);
+      }
+      button:focus-visible,
+      a:focus-visible,
+      [role="button"]:focus-visible {
+        outline: 2px solid var(--tiizi-focus);
+        outline-offset: 2px;
+      }
+      button:active,
+      [role="button"]:active {
+        transform: scale(0.98);
+      }
+
+      /* Clickable cards affordance */
+      button[class*="rounded"],
+      [role="button"][class*="rounded"],
+      a[class*="rounded"] {
+        border: 1px solid var(--tiizi-border);
+      }
+      button[class*="rounded"]:hover,
+      [role="button"][class*="rounded"]:hover,
+      a[class*="rounded"]:hover {
+        border-color: var(--tiizi-focus);
+      }
+
       /* Global Color Swap Override */
       .bg-primary { background-color: #D36D21 !important; }
       .text-primary { color: #D36D21 !important; }
@@ -87,5 +244,6 @@
 </head>
   <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

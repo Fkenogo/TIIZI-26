@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { TabType, AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -9,6 +10,8 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { state } = useTiizi();
+  const canLogWorkout = !!state.activeChallenge?.id;
 
   // Home, Feed, [ + ], Groups, Challenges
   const leftTabs = [
@@ -23,7 +26,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onNavigate }) => {
 
   const actions = [
     { label: 'Create Challenge', icon: 'emoji_events', view: AppView.CREATE_CHALLENGE_TYPE, color: 'bg-amber-500' },
-    { label: 'Log Workout', icon: 'fitness_center', view: AppView.LOG_WORKOUT, color: 'bg-primary' },
+    { label: 'Log Workout', icon: 'fitness_center', view: AppView.LOG_WORKOUT, color: 'bg-primary', disabled: !canLogWorkout },
     { label: 'Create a Group', icon: 'group_add', view: AppView.FIND_GROUPS, color: 'bg-emerald-500' },
     { label: 'Create a Post', icon: 'add_comment', view: AppView.GROUP_FEED, color: 'bg-blue-500' },
   ];
@@ -55,8 +58,9 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onNavigate }) => {
             {actions.map((action, i) => (
               <button
                 key={i}
-                onClick={() => handleAction(action.view)}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 group"
+                onClick={() => !action.disabled && handleAction(action.view)}
+                disabled={action.disabled}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className={`size-14 rounded-2xl ${action.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                   <span className="material-icons-round text-3xl">{action.icon}</span>

@@ -1,14 +1,9 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { AppView } from './types';
 import { TiiziProvider, useTiizi, ToastMessage } from './context/AppContext';
-import WelcomeScreen from './screens/WelcomeScreen';
-import LoggingOnboardingScreen from './screens/LoggingOnboardingScreen';
-import CommunityOnboardingScreen from './screens/CommunityOnboardingScreen';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginScreen from './screens/LoginScreen';
-import SignupScreen from './screens/SignupScreen';
-import VerifyScreen from './screens/VerifyScreen';
-import ProfileSetupScreen from './screens/ProfileSetupScreen';
 import GroupsListScreen from './screens/GroupsListScreen';
 import GroupHomeScreen from './screens/GroupHomeScreen';
 import GroupChatScreen from './screens/GroupChatScreen';
@@ -65,8 +60,11 @@ import ShareProgressCardScreen from './screens/ShareProgressCardScreen';
 import ChallengeDetailLeaderboardScreen from './screens/ChallengeDetailLeaderboardScreen';
 import SupportHistoryScreen from './screens/SupportHistoryScreen';
 import ShareMyProfileScreen from './screens/ShareMyProfileScreen';
-import ScanQRCodeScreen from './screens/ScanQRCodeScreen';
 import GroupJoinSheetScreen from './screens/GroupJoinSheetScreen';
+import SupportRequestScreen from './screens/SupportRequestScreen';
+import AdminSupportRequestsScreen from './screens/AdminSupportRequestsScreen';
+import AdminExerciseEngineScreen from './screens/AdminExerciseEngineScreen';
+import SupportRequestDetailScreen from './screens/SupportRequestDetailScreen';
 import AchievementHubScreen from './screens/AchievementHubScreen';
 import AchievementDetailScreen from './screens/AchievementDetailScreen';
 import BadgeUnlockScreen from './screens/BadgeUnlockScreen';
@@ -83,6 +81,10 @@ import TrophyRoomScreen from './screens/TrophyRoomScreen';
 import BadgeDetailModalScreen from './screens/BadgeDetailModalScreen';
 import YearInReviewScreen from './screens/YearInReviewScreen';
 import NewYearChallengeScreen from './screens/NewYearChallengeScreen';
+import MilestonesScreen from './screens/MilestonesScreen';
+import CommunityValuesScreen from './screens/CommunityValuesScreen';
+import ConnectedAccountsScreen from './screens/ConnectedAccountsScreen';
+import { CORE_MVP_ENABLED, isCoreMvpView } from './utils/coreMvp';
 
 const Toast: React.FC<{ toast: ToastMessage, onRemove: (id: string) => void }> = ({ toast, onRemove }) => {
   const bgColor = toast.type === 'success' ? 'bg-emerald-500' : toast.type === 'error' ? 'bg-red-500' : 'bg-primary';
@@ -99,9 +101,21 @@ const Toast: React.FC<{ toast: ToastMessage, onRemove: (id: string) => void }> =
   );
 };
 
-const Router: React.FC = () => {
-  const [currentView, setCurrentView] = React.useState<AppView>(AppView.WELCOME);
+const ViewContainer: React.FC = () => {
+  const { view } = useParams();
+  const navigate = useNavigate();
   const { state, toggleDarkMode, removeToast } = useTiizi();
+  const resetOnLoad = import.meta.env.VITE_RESET_ON_LOAD === 'true';
+
+  useEffect(() => {
+    if (!resetOnLoad) return;
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // Ignore storage errors in locked-down environments.
+    }
+  }, [resetOnLoad]);
 
   useEffect(() => {
     if (state.isDarkMode) {
@@ -111,92 +125,196 @@ const Router: React.FC = () => {
     }
   }, [state.isDarkMode]);
 
-  const navigate = (view: AppView) => {
-    setCurrentView(view);
+  const navigateToView = (nextView: AppView) => {
+    navigate(`/${nextView}`);
     window.scrollTo(0, 0);
   };
 
+  const resolvedView = useMemo(() => {
+    const allViews = Object.values(AppView) as string[];
+    return allViews.includes(view || '') ? (view as AppView) : AppView.LOGIN;
+  }, [view]);
+  const isCoreRoute = !CORE_MVP_ENABLED || isCoreMvpView(resolvedView);
+  const isAuthed = !!state.user.authUid;
+  const hasGroup = !!state.activeGroupId;
+  const hasActiveChallenge = !!state.activeChallenge?.id;
+  const preGroupViews = new Set<AppView>([
+    AppView.GROUPS_LIST,
+    AppView.FIND_GROUPS,
+    AppView.GROUP_JOIN_SHEET,
+    AppView.REQUEST_TO_JOIN_PRIVATE,
+    AppView.GROUP_INVITE_LANDING,
+    AppView.GROUP_PRIVACY_SETTINGS,
+    AppView.SHARE_INVITE
+  ]);
+  const challengeRequiredViews = new Set<AppView>([
+    AppView.LOG_WORKOUT,
+    AppView.CHALLENGE_COMPLETE,
+    AppView.CHALLENGE_RECAP,
+    AppView.CHALLENGE_RECAP_STORY,
+    AppView.CHALLENGE_DETAIL_LEADERBOARD,
+    AppView.SHARE_PROGRESS_CARD
+  ]);
+
+  const activeGroup = state.groups.find((g) => g.id === state.activeGroupId);
+  const superAdminIds = (import.meta.env.VITE_SUPER_ADMIN_UIDS || '')
+    .split(',')
+    .map((id: string) => id.trim())
+    .filter(Boolean);
+  const forceAdminInDev = import.meta.env.VITE_DEV_FORCE_ADMIN === 'true';
+  const isSuperAdmin = !!state.user.authUid && superAdminIds.includes(state.user.authUid);
+  const isAdmin = !!state.user.authUid && (
+    forceAdminInDev ||
+    isSuperAdmin ||
+    activeGroup?.adminIds?.includes(state.user.authUid) ||
+    state.user.role === 'admin'
+  );
+  const adminViews = new Set<AppView>([
+    AppView.ADMIN_DASHBOARD,
+    AppView.ADMIN_ENGAGEMENT,
+    AppView.ADMIN_MODERATION,
+    AppView.ADMIN_GROUP_CONSISTENCY,
+    AppView.ADMIN_INACTIVE_MEMBERS,
+    AppView.ADMIN_PENDING_REQUESTS,
+    AppView.ADMIN_MEMBER_MANAGEMENT,
+    AppView.ADMIN_MANAGE_ROLES,
+    AppView.ADMIN_BROADCAST,
+    AppView.ADMIN_SUPPORT_REQUESTS,
+    AppView.ADMIN_EXERCISE_ENGINE,
+  ]);
+  const isAdminView = adminViews.has(resolvedView);
+
+  useEffect(() => {
+    if (isAdminView && !isAdmin) {
+      navigate(`/${AppView.GROUP_HOME}`, { replace: true });
+    }
+  }, [isAdminView, isAdmin, navigate]);
+
+  useEffect(() => {
+    if (isCoreRoute) return;
+    const fallback = state.user.authUid ? AppView.GROUP_HOME : AppView.LOGIN;
+    navigate(`/${fallback}`, { replace: true });
+  }, [isCoreRoute, navigate, state.user.authUid]);
+
+  useEffect(() => {
+    if (!isAuthed && resolvedView !== AppView.LOGIN) {
+      navigate(`/${AppView.LOGIN}?next=${encodeURIComponent(resolvedView)}`, { replace: true });
+      return;
+    }
+    if (isAuthed && !hasGroup && !preGroupViews.has(resolvedView) && !(isAdmin && isAdminView)) {
+      navigate(`/${AppView.GROUPS_LIST}`, { replace: true });
+      return;
+    }
+    if (isAuthed && hasGroup && !hasActiveChallenge && challengeRequiredViews.has(resolvedView)) {
+      navigate(`/${AppView.CHALLENGES_LIST}`, { replace: true });
+    }
+  }, [isAuthed, hasGroup, hasActiveChallenge, resolvedView, navigate, isAdmin, isAdminView]);
+
   const views = {
-    [AppView.WELCOME]: <WelcomeScreen onNavigate={navigate} />,
-    [AppView.ONBOARDING_LOGGING]: <LoggingOnboardingScreen onNavigate={navigate} />,
-    [AppView.ONBOARDING_COMMUNITY]: <CommunityOnboardingScreen onNavigate={navigate} />,
-    [AppView.LOGIN]: <LoginScreen onNavigate={navigate} />,
-    [AppView.SIGNUP]: <SignupScreen onNavigate={navigate} />,
-    [AppView.VERIFY]: <VerifyScreen onNavigate={navigate} />,
-    [AppView.PROFILE_SETUP]: <ProfileSetupScreen onNavigate={navigate} />,
-    [AppView.GROUPS_LIST]: <GroupsListScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.GROUP_HOME]: <GroupHomeScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.GROUP_CHAT]: <GroupChatScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.LOG_WORKOUT]: <LogWorkoutScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.SUPPORT_FUND]: <SupportFundScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.GROUP_RULES]: <GroupRulesScreen onNavigate={navigate} />,
-    [AppView.GROUP_MEMBER_DIRECTORY]: <GroupMemberDirectoryScreen onNavigate={navigate} />,
-    [AppView.PROFILE]: <ProfileScreen onNavigate={navigate} user={state.user} />,
-    [AppView.MODERN_ACHIEVEMENTS_HUB]: <ModernAchievementsHubScreen onNavigate={navigate} />,
-    [AppView.CELEBRATORY_BADGE_DETAIL]: <CelebratoryBadgeDetailScreen onNavigate={navigate} />,
-    [AppView.TROPHY_ROOM]: <TrophyRoomScreen onNavigate={navigate} />,
-    [AppView.BADGE_DETAIL_MODAL]: <BadgeDetailModalScreen onNavigate={navigate} />,
-    [AppView.YEAR_IN_REVIEW]: <YearInReviewScreen onNavigate={navigate} />,
-    [AppView.SHARE_PROGRESS_CARD]: <ShareProgressCardScreen onNavigate={navigate} />,
-    [AppView.MONTH_IN_REVIEW]: <MonthInReviewScreen onNavigate={navigate} />,
-    [AppView.CONSISTENCY_DASHBOARD]: <ConsistencyDashboardScreen onNavigate={navigate} />,
-    [AppView.ADMIN_DASHBOARD]: <GroupAdminDashboardScreen onNavigate={navigate} />,
-    [AppView.ADMIN_ENGAGEMENT]: <MemberEngagementScreen onNavigate={navigate} />,
-    [AppView.ADMIN_MODERATION]: <ModerationDashboardScreen onNavigate={navigate} />,
-    [AppView.ADMIN_GROUP_CONSISTENCY]: <AdminGroupConsistencyScreen onNavigate={navigate} />,
-    [AppView.ADMIN_INACTIVE_MEMBERS]: <AdminInactiveMembersScreen onNavigate={navigate} />,
-    [AppView.ADMIN_PENDING_REQUESTS]: <AdminPendingRequestsScreen onNavigate={navigate} />,
-    [AppView.ADMIN_MEMBER_MANAGEMENT]: <AdminMemberManagementScreen onNavigate={navigate} />,
-    [AppView.ADMIN_MANAGE_ROLES]: <AdminManageRolesScreen onNavigate={navigate} />,
-    [AppView.ADMIN_BROADCAST]: <AdminBroadcastScreen onNavigate={navigate} />,
-    [AppView.DISCOVER]: <DiscoverScreen onNavigate={navigate} />,
-    [AppView.NEW_YEAR_CHALLENGE]: <NewYearChallengeScreen onNavigate={navigate} />,
-    [AppView.SETUP_CHALLENGE]: <SetupChallengeScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.CHALLENGES_LIST]: <ChallengesListScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.CREATE_CHALLENGE_TYPE]: <CreateChallengeTypeScreen onNavigate={navigate} isDark={state.isDarkMode} />,
-    [AppView.CREATE_CHALLENGE_EXERCISE]: <CreateChallengeExerciseScreen onNavigate={navigate} isDark={state.isDarkMode} />,
-    [AppView.CREATE_CHALLENGE_DURATION]: <CreateChallengeDurationScreen onNavigate={navigate} isDark={state.isDarkMode} />,
-    [AppView.CREATE_CHALLENGE_DETAILS]: <CreateChallengeDetailsScreen onNavigate={navigate} isDark={state.isDarkMode} />,
-    [AppView.CHALLENGE_RECAP]: <ChallengeRecapScreen onNavigate={navigate} />,
-    [AppView.CHALLENGE_RECAP_STORY]: <ChallengeRecapStoryScreen onNavigate={navigate} />,
-    [AppView.CHALLENGE_DETAIL_LEADERBOARD]: <ChallengeDetailLeaderboardScreen onNavigate={navigate} />,
-    [AppView.SUPPORT_HISTORY]: <SupportHistoryScreen onNavigate={navigate} />,
-    [AppView.COMMUNITY_RESOURCES]: <CommunityResourcesScreen onNavigate={navigate} />,
-    [AppView.HELP_CENTER]: <HelpCenterScreen onNavigate={navigate} />,
-    [AppView.PLEDGE_MODAL]: <PledgeModalScreen onNavigate={navigate} />,
-    [AppView.PLEDGE_RECORDED]: <PledgeRecordedScreen onNavigate={navigate} />,
-    [AppView.DONATION_THANK_YOU]: <DonationThankYouScreen onNavigate={navigate} />,
-    [AppView.SETTINGS]: <SettingsScreen onNavigate={navigate} />,
-    [AppView.EDIT_PROFILE]: <EditProfileScreen onNavigate={navigate} />,
-    [AppView.NOTIFICATIONS]: <NotificationsScreen onNavigate={navigate} />,
-    [AppView.PRIORITY_ALERTS]: <PriorityAlertsScreen onNavigate={navigate} />,
-    [AppView.SCAN_QR_CODE]: <ScanQRCodeScreen onNavigate={navigate} />,
-    [AppView.GROUP_JOIN_SHEET]: <GroupJoinSheetScreen onNavigate={navigate} />,
-    [AppView.EXERCISE_LIBRARY]: <ExerciseLibraryScreen onNavigate={navigate} />,
-    [AppView.EXERCISE_DETAIL]: <ExerciseDetailScreen onNavigate={navigate} />,
-    [AppView.LEADERBOARD]: <LeaderboardScreen onNavigate={navigate} />,
-    [AppView.GROUP_FEED]: <GroupFeedScreen onNavigate={navigate} />,
-    [AppView.CELEBRATION]: <CelebrationScreen onNavigate={navigate} />,
-    [AppView.TEAM_ROOTING_CELEBRATION]: <TeamRootingCelebrationScreen onNavigate={navigate} />,
-    [AppView.FIND_GROUPS]: <FindGroupsScreen onNavigate={navigate} />,
-    [AppView.REQUEST_TO_JOIN_PRIVATE]: <RequestToJoinPrivateScreen onNavigate={navigate} />,
-    [AppView.GROUP_HISTORY]: <GroupHistoryScreen onNavigate={navigate} />,
-    [AppView.GROUP_INVITE_LANDING]: <GroupInviteLandingScreen onNavigate={navigate} />,
-    [AppView.GROUP_PRIVACY_SETTINGS]: <GroupPrivacySettingsScreen onNavigate={navigate} />,
-    [AppView.SHARE_INVITE]: <ShareInviteScreen onNavigate={navigate} />,
-    [AppView.SHARE_MY_PROFILE]: <ShareMyProfileScreen onNavigate={navigate} />,
-    [AppView.ACHIEVEMENTS_HUB]: <AchievementHubScreen onNavigate={navigate} />,
-    [AppView.ACHIEVEMENT_DETAIL]: <AchievementDetailScreen onNavigate={navigate} />,
-    [AppView.BADGE_UNLOCK]: <BadgeUnlockScreen onNavigate={navigate} />,
-    [AppView.LEVEL_UP_MODAL]: <LevelUpModalScreen onNavigate={navigate} />,
-    [AppView.GROUP_PERFORMANCE_REPORT]: <GroupPerformanceReportScreen onNavigate={navigate} />,
-    [AppView.WORKOUT_PLAN_ROADMAP]: <WorkoutPlanRoadmapScreen onNavigate={navigate} />,
-    [AppView.WORKOUT_PLAN_PREVIEW]: <WorkoutPlanPreviewScreen onNavigate={navigate} />,
-    [AppView.GROUP_WORKOUT_PLANS]: <GroupWorkoutPlansScreen onNavigate={navigate} />,
-    [AppView.SELECT_GROUP_FOR_PLAN]: <SelectGroupForPlanScreen onNavigate={navigate} />,
-    [AppView.CHALLENGE_COMPLETE]: <ChallengeCompleteScreen onNavigate={navigate} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
-    [AppView.CONSISTENCY_WINS]: <ConsistencyWinsScreen onNavigate={navigate} />,
+    [AppView.LOGIN]: <LoginScreen onNavigate={navigateToView} />,
+    [AppView.GROUPS_LIST]: <GroupsListScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.GROUP_HOME]: <GroupHomeScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.GROUP_CHAT]: <GroupChatScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.LOG_WORKOUT]: <LogWorkoutScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.SUPPORT_FUND]: <SupportFundScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.GROUP_RULES]: <GroupRulesScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_MEMBER_DIRECTORY]: <GroupMemberDirectoryScreen onNavigate={navigateToView} />,
+    [AppView.PROFILE]: <ProfileScreen onNavigate={navigateToView} user={state.user} />,
+    [AppView.MODERN_ACHIEVEMENTS_HUB]: <ModernAchievementsHubScreen onNavigate={navigateToView} />,
+    [AppView.CELEBRATORY_BADGE_DETAIL]: <CelebratoryBadgeDetailScreen onNavigate={navigateToView} />,
+    [AppView.TROPHY_ROOM]: <TrophyRoomScreen onNavigate={navigateToView} />,
+    [AppView.BADGE_DETAIL_MODAL]: <BadgeDetailModalScreen onNavigate={navigateToView} />,
+    [AppView.YEAR_IN_REVIEW]: <YearInReviewScreen onNavigate={navigateToView} />,
+    [AppView.SHARE_PROGRESS_CARD]: <ShareProgressCardScreen onNavigate={navigateToView} />,
+    [AppView.MONTH_IN_REVIEW]: <MonthInReviewScreen onNavigate={navigateToView} />,
+    [AppView.CONSISTENCY_DASHBOARD]: <ConsistencyDashboardScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_DASHBOARD]: <GroupAdminDashboardScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_ENGAGEMENT]: <MemberEngagementScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_MODERATION]: <ModerationDashboardScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_GROUP_CONSISTENCY]: <AdminGroupConsistencyScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_INACTIVE_MEMBERS]: <AdminInactiveMembersScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_PENDING_REQUESTS]: <AdminPendingRequestsScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_MEMBER_MANAGEMENT]: <AdminMemberManagementScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_MANAGE_ROLES]: <AdminManageRolesScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_BROADCAST]: <AdminBroadcastScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_EXERCISE_ENGINE]: <AdminExerciseEngineScreen onNavigate={navigateToView} />,
+    [AppView.DISCOVER]: <DiscoverScreen onNavigate={navigateToView} />,
+    [AppView.NEW_YEAR_CHALLENGE]: <NewYearChallengeScreen onNavigate={navigateToView} />,
+    [AppView.SETUP_CHALLENGE]: <SetupChallengeScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.CHALLENGES_LIST]: <ChallengesListScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.CREATE_CHALLENGE_TYPE]: <CreateChallengeTypeScreen onNavigate={navigateToView} isDark={state.isDarkMode} />,
+    [AppView.CREATE_CHALLENGE_EXERCISE]: <CreateChallengeExerciseScreen onNavigate={navigateToView} isDark={state.isDarkMode} />,
+    [AppView.CREATE_CHALLENGE_DURATION]: <CreateChallengeDurationScreen onNavigate={navigateToView} isDark={state.isDarkMode} />,
+    [AppView.CREATE_CHALLENGE_DETAILS]: <CreateChallengeDetailsScreen onNavigate={navigateToView} isDark={state.isDarkMode} />,
+    [AppView.CHALLENGE_RECAP]: <ChallengeRecapScreen onNavigate={navigateToView} />,
+    [AppView.CHALLENGE_RECAP_STORY]: <ChallengeRecapStoryScreen onNavigate={navigateToView} />,
+    [AppView.CHALLENGE_DETAIL_LEADERBOARD]: <ChallengeDetailLeaderboardScreen onNavigate={navigateToView} />,
+    [AppView.SUPPORT_HISTORY]: <SupportHistoryScreen onNavigate={navigateToView} />,
+    [AppView.COMMUNITY_RESOURCES]: <CommunityResourcesScreen onNavigate={navigateToView} />,
+    [AppView.HELP_CENTER]: <HelpCenterScreen onNavigate={navigateToView} />,
+    [AppView.PLEDGE_MODAL]: <PledgeModalScreen onNavigate={navigateToView} />,
+    [AppView.PLEDGE_RECORDED]: <PledgeRecordedScreen onNavigate={navigateToView} />,
+    [AppView.DONATION_THANK_YOU]: <DonationThankYouScreen onNavigate={navigateToView} />,
+    [AppView.SETTINGS]: <SettingsScreen onNavigate={navigateToView} />,
+    [AppView.EDIT_PROFILE]: <EditProfileScreen onNavigate={navigateToView} />,
+    [AppView.NOTIFICATIONS]: <NotificationsScreen onNavigate={navigateToView} />,
+    [AppView.PRIORITY_ALERTS]: <PriorityAlertsScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_JOIN_SHEET]: <GroupJoinSheetScreen onNavigate={navigateToView} />,
+    [AppView.SUPPORT_REQUEST]: <SupportRequestScreen onNavigate={navigateToView} />,
+    [AppView.SUPPORT_REQUEST_DETAIL]: <SupportRequestDetailScreen onNavigate={navigateToView} />,
+    [AppView.ADMIN_SUPPORT_REQUESTS]: <AdminSupportRequestsScreen onNavigate={navigateToView} />,
+    [AppView.EXERCISE_LIBRARY]: <ExerciseLibraryScreen onNavigate={navigateToView} />,
+    [AppView.EXERCISE_DETAIL]: <ExerciseDetailScreen onNavigate={navigateToView} />,
+    [AppView.LEADERBOARD]: <LeaderboardScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_FEED]: <GroupFeedScreen onNavigate={navigateToView} />,
+    [AppView.CELEBRATION]: <CelebrationScreen onNavigate={navigateToView} />,
+    [AppView.MILESTONES]: <MilestonesScreen onNavigate={navigateToView} />,
+    [AppView.COMMUNITY_VALUES]: <CommunityValuesScreen onNavigate={navigateToView} />,
+    [AppView.CONNECTED_ACCOUNTS]: <ConnectedAccountsScreen onNavigate={navigateToView} />,
+    [AppView.TEAM_ROOTING_CELEBRATION]: <TeamRootingCelebrationScreen onNavigate={navigateToView} />,
+    [AppView.FIND_GROUPS]: <FindGroupsScreen onNavigate={navigateToView} />,
+    [AppView.REQUEST_TO_JOIN_PRIVATE]: <RequestToJoinPrivateScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_HISTORY]: <GroupHistoryScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_INVITE_LANDING]: <GroupInviteLandingScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_PRIVACY_SETTINGS]: <GroupPrivacySettingsScreen onNavigate={navigateToView} />,
+    [AppView.SHARE_INVITE]: <ShareInviteScreen onNavigate={navigateToView} />,
+    [AppView.SHARE_MY_PROFILE]: <ShareMyProfileScreen onNavigate={navigateToView} />,
+    [AppView.ACHIEVEMENTS_HUB]: <AchievementHubScreen onNavigate={navigateToView} />,
+    [AppView.ACHIEVEMENT_DETAIL]: <AchievementDetailScreen onNavigate={navigateToView} />,
+    [AppView.BADGE_UNLOCK]: <BadgeUnlockScreen onNavigate={navigateToView} />,
+    [AppView.LEVEL_UP_MODAL]: <LevelUpModalScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_PERFORMANCE_REPORT]: <GroupPerformanceReportScreen onNavigate={navigateToView} />,
+    [AppView.WORKOUT_PLAN_ROADMAP]: <WorkoutPlanRoadmapScreen onNavigate={navigateToView} />,
+    [AppView.WORKOUT_PLAN_PREVIEW]: <WorkoutPlanPreviewScreen onNavigate={navigateToView} />,
+    [AppView.GROUP_WORKOUT_PLANS]: <GroupWorkoutPlansScreen onNavigate={navigateToView} />,
+    [AppView.SELECT_GROUP_FOR_PLAN]: <SelectGroupForPlanScreen onNavigate={navigateToView} />,
+    [AppView.CHALLENGE_COMPLETE]: <ChallengeCompleteScreen onNavigate={navigateToView} onToggleDark={toggleDarkMode} isDark={state.isDarkMode} />,
+    [AppView.CONSISTENCY_WINS]: <ConsistencyWinsScreen onNavigate={navigateToView} />,
+    [AppView.REPORT_MEMBER]: <ReportMemberScreen onNavigate={navigateToView} />,
+    [AppView.SHAREABLE_REPORT]: <ShareableReportScreen onNavigate={navigateToView} />,
   };
+
+  if (adminViews.has(resolvedView) && !isAdmin) {
+    return (
+      <div className="flex justify-center min-h-screen bg-background-light dark:bg-black transition-all">
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl relative min-h-screen overflow-x-hidden flex flex-col items-center justify-center px-6 text-center">
+          <span className="material-icons-round text-primary text-4xl mb-4">lock</span>
+          <h2 className="text-lg font-black mb-2">Admin Access Required</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">You don’t have permission to view this page.</p>
+          <button
+            onClick={() => navigate(`/${AppView.GROUP_HOME}`)}
+            className="bg-primary text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px]"
+          >
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isCoreRoute) {
+    return null;
+  }
 
   return (
     <div className="flex justify-center min-h-screen bg-background-light dark:bg-black transition-all">
@@ -209,17 +327,29 @@ const Router: React.FC = () => {
         </div>
 
         <div className="flex-1 flex flex-col">
-          {views[currentView] || views[AppView.WELCOME]}
+          {views[resolvedView] || views[AppView.LOGIN]}
         </div>
       </div>
     </div>
   );
 };
 
+const AppRoutes: React.FC = () => (
+  <Routes>
+    <Route path="/" element={<Navigate to={`/${AppView.LOGIN}`} replace />} />
+    <Route path="/:view" element={<ViewContainer />} />
+    <Route path="*" element={<Navigate to={`/${AppView.LOGIN}`} replace />} />
+  </Routes>
+);
+
 const App: React.FC = () => (
-  <TiiziProvider>
-    <Router />
-  </TiiziProvider>
+  <ErrorBoundary>
+    <TiiziProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </TiiziProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -9,7 +9,7 @@ interface Props {
 
 const CreateChallengeDetailsScreen: React.FC<Props> = ({ onNavigate, isDark }) => {
   const [desc, setDesc] = useState('');
-  const [coverImg, setCoverImg] = useState('https://picsum.photos/id/117/800/400');
+  const [coverImg] = useState<string | null>(null);
 
   return (
     <div className="h-screen bg-black/40 flex flex-col justify-end font-display">
@@ -37,7 +37,13 @@ const CreateChallengeDetailsScreen: React.FC<Props> = ({ onNavigate, isDark }) =
           <div className="mb-8 mt-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1">Challenge Cover</p>
             <div className="relative w-full h-40 rounded-[32px] overflow-hidden group cursor-pointer border-4 border-white dark:border-slate-800 shadow-xl">
-              <img src={coverImg} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Cover" />
+              {coverImg ? (
+                <img src={coverImg} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Cover" />
+              ) : (
+                <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  No image selected
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-white text-xs font-bold border border-white/30">Change Image</div>
               </div>

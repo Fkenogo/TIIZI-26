@@ -1,12 +1,29 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useTiizi } from '../context/AppContext';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const BadgeUnlockScreen: React.FC<Props> = ({ onNavigate }) => {
+  const [params] = useSearchParams();
+  const { state } = useTiizi();
+  const badgeId = params.get('badgeId') || '';
+  const from = params.get('from');
+  const activeGroup = state.groups.find((g) => g.id === state.activeGroupId);
+  const groupName = params.get('group') || activeGroup?.name || '';
+  const streak = Number(params.get('streak') || state.user.stats?.streak || 0);
+  const backView = from === 'notifications'
+    ? AppView.NOTIFICATIONS
+    : from === 'milestones'
+      ? AppView.MILESTONES
+      : from === 'group_feed'
+        ? AppView.GROUP_FEED
+        : AppView.GROUP_HOME;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-display bg-white/80 dark:bg-[#1a130c]/85 backdrop-blur-2xl p-8 antialiased">
       {/* Background Spots */}
@@ -18,7 +35,7 @@ const BadgeUnlockScreen: React.FC<Props> = ({ onNavigate }) => {
       {/* Close Button */}
       <div className="absolute top-14 right-8">
         <button 
-          onClick={() => onNavigate(AppView.GROUP_HOME)}
+          onClick={() => onNavigate(backView)}
           className="size-12 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-slate-900 dark:text-white transition-all active:scale-90"
         >
           <span className="material-icons-round">close</span>
@@ -45,7 +62,7 @@ const BadgeUnlockScreen: React.FC<Props> = ({ onNavigate }) => {
               <span className="material-icons-round text-white text-[100px] leading-none mb-2 drop-shadow-2xl font-variation-fill" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
               <div className="text-white font-black text-center px-4 leading-tight">
                 <span className="block text-[8px] uppercase tracking-[0.3em] opacity-80 mb-0.5">STREAK</span>
-                <span className="text-2xl tracking-tighter">14 DAYS</span>
+                <span className="text-2xl tracking-tighter">{streak} DAYS</span>
               </div>
             </div>
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/10 blur-xl rounded-full"></div>
@@ -56,7 +73,7 @@ const BadgeUnlockScreen: React.FC<Props> = ({ onNavigate }) => {
         <div className="text-center space-y-4 z-10">
           <h1 className="text-[#1b140d] dark:text-white text-5xl font-black tracking-tighter leading-[0.9]">New Badge Earned!</h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-[300px] mx-auto font-medium">
-            You've reached a 14-day streak. Your group <span className="font-black text-primary">Morning Warriors</span> is cheering for you!
+            You've reached a {streak}-day streak. {groupName ? <>Your group <span className="font-black text-primary">{groupName}</span> is cheering for you!</> : 'Your group is cheering for you!'}
           </p>
         </div>
       </div>
@@ -64,14 +81,19 @@ const BadgeUnlockScreen: React.FC<Props> = ({ onNavigate }) => {
       {/* Buttons Footer */}
       <div className="absolute bottom-16 left-0 right-0 px-10 flex flex-col gap-5 w-full max-w-md mx-auto">
         <button 
-          onClick={() => onNavigate(AppView.SHARE_PROGRESS_CARD)}
-          className="w-full bg-primary hover:bg-orange-600 text-white font-black h-16 rounded-[28px] flex items-center justify-center gap-4 transition-all active:scale-95 shadow-2xl shadow-primary/30 uppercase tracking-widest text-sm"
+          onClick={() => {
+            if (!badgeId) return;
+            onNavigate((`${AppView.SHARE_PROGRESS_CARD}?mode=badge&badgeId=${encodeURIComponent(badgeId)}&source=badge_unlock`) as AppView);
+          }}
+          className={`w-full font-black h-16 rounded-[28px] flex items-center justify-center gap-4 transition-all active:scale-95 shadow-2xl uppercase tracking-widest text-sm ${
+            badgeId ? 'bg-primary hover:bg-orange-600 text-white shadow-primary/30' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 shadow-none'
+          }`}
         >
           <span className="material-icons-round">share</span>
           Share the Joy
         </button>
         <button 
-          onClick={() => onNavigate(AppView.GROUP_HOME)}
+          onClick={() => onNavigate(backView)}
           className="w-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 rounded-full transition-colors"
         >
           Collect & Continue

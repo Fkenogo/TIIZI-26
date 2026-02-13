@@ -1,0 +1,109 @@
+NOTIFICATION RULES & TIMING
+LOGIC
+Notifications are designed to support consistency, not annoy users. Defaults are
+conservative and user-adjustable.
+
+8.1 Notification Categories
+Core Activity
+Challenge start
+Daily reminder
+Streak at risk
+Challenge ending soon
+Challenge completed
+Social & Group
+Member logs workout
+Group milestone reached
+Relay turn notification
+Someone you follow completes a workout
+Community Support
+Donation prompt (optional)
+Fundraising challenge update
+Group fund milestone
+
+8.2 Timing Rules
+Challenge Start
+Trigger: Challenge is created
+NOTIFICATION RULES & TIMING LOGIC
+
+1
+
+Timing: Immediate
+Frequency: Once
+Message:
+
+🏁 {{Challenge Name}} has started. Let’s go.
+
+Daily Activity Reminder
+Trigger: No activity logged today
+Timing: User’s preferred time (default 7:00pm)
+Frequency: Once per day
+Message:
+
+⏰ Haven’t logged a workout today. Even a small effort counts.
+
+Streak At Risk
+Trigger: User has an active streak + no log by evening
+Timing: 2 hours before streak reset
+Frequency: Once per streak cycle
+Message:
+
+🔥 Your streak is at risk. Log something to keep it alive.
+
+Relay / Baton Turn
+Trigger: Previous member completes their turn
+Timing: Immediate
+Frequency: As needed
+Message:
+
+🏃 It’s your turn. Time to log your workout.
+
+Group Milestone
+
+NOTIFICATION RULES & TIMING LOGIC
+
+2
+
+Trigger: 25%, 50%, 75%, 100% of goal reached
+Timing: Immediate
+Frequency: Once per milestone
+Message:
+
+🎉 The group just hit {{Milestone}} of the goal.
+
+Challenge Ending Soon
+Trigger: 24 hours remaining
+Timing: 24 hours before end
+Frequency: Once
+Message:
+
+⏳ 24 hours left to finish {{Challenge Name}}.
+
+Challenge Completed
+Trigger: Goal reached or time elapsed
+Timing: Immediate
+Frequency: Once
+Message:
+
+✅ Challenge completed. Great work, team.
+
+8.3 Donation Prompt Rules
+Important: Donation prompts are never repeated aggressively.
+Triggered only after positive moments:
+Challenge completion
+Personal milestone
+Max frequency: Once per challenge
+
+NOTIFICATION RULES & TIMING LOGIC
+
+3
+
+User options:
+Donate now
+Maybe later
+Don’t ask again for this challenge
+
+NOTIFICATION RULES & TIMING LOGIC
+
+4
+
+

@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AppView } from '../types';
+import { useFirestoreCollection } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -8,13 +9,17 @@ interface Props {
 }
 
 const CreateChallengeTypeScreen: React.FC<Props> = ({ onNavigate, isDark }) => {
-  const [selectedType, setSelectedType] = useState('daily');
+  const [selectedType, setSelectedType] = useState('');
+  const { items: typeItems } = useFirestoreCollection<{ id: string; title?: string; sub?: string; icon?: string }>(
+    ['challengeTypes']
+  );
+  const types = useMemo(() => typeItems, [typeItems]);
 
-  const types = [
-    { id: 'daily', title: 'Daily', sub: 'Complete specific tasks every single day', icon: 'calendar_today' },
-    { id: 'weekly', title: 'Weekly', sub: 'Recurring goals that reset every week', icon: 'event_repeat' },
-    { id: 'cumulative', title: 'Cumulative', sub: 'Reach a total goal by the challenge end date', icon: 'functions' }
-  ];
+  useEffect(() => {
+    if (!selectedType && types.length > 0) {
+      setSelectedType(types[0].id);
+    }
+  }, [selectedType, types]);
 
   return (
     <div className="h-screen bg-black/40 flex flex-col justify-end overflow-hidden font-display">

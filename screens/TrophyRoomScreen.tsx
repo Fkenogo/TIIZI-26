@@ -1,38 +1,34 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
+import { useFirestoreCollection } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
-  const categories = [
-    { 
-      title: 'Streaks', 
-      icon: 'local_fire_department', 
-      color: 'text-orange-600 dark:text-orange-400', 
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-      items: [
-        { label: '7 Days', icon: 'filter_7', gradient: 'from-orange-400 to-red-500', active: true },
-        { label: '30 Days', icon: 'filter_3', gradient: 'from-amber-300 to-orange-500', active: true, scale: true },
-        { label: '90 Days', icon: 'lock', locked: true },
-        { label: '365 Days', icon: 'lock', locked: true }
-      ]
-    },
-    { 
-      title: 'Challenges', 
-      icon: 'military_tech', 
-      color: 'text-blue-600 dark:text-blue-400', 
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-      items: [
-        { label: 'Sprint', icon: 'directions_run', gradient: 'from-blue-400 to-indigo-600', active: true, rotate: 'rotate-3' },
-        { label: 'Summit', icon: 'mountain_flag', gradient: 'from-purple-400 to-indigo-700', active: true, rotate: '-rotate-3' },
-        { label: 'Strength', icon: 'fitness_center', gradient: 'from-cyan-400 to-blue-500', active: true },
-        { label: 'Next', icon: 'help_outline', locked: true }
-      ]
-    }
-  ];
+  const { state } = useTiizi();
+  const canLogWorkout = !!state.activeChallenge?.id;
+  const { items: categories } = useFirestoreCollection<{
+    id: string;
+    title: string;
+    icon?: string;
+    color?: string;
+    bgColor?: string;
+    items?: Array<{
+      label: string;
+      icon?: string;
+      gradient?: string;
+      active?: boolean;
+      locked?: boolean;
+      rotate?: string;
+      route?: string;
+      badgeId?: string;
+      challengeId?: string;
+    }>;
+  }>(state.user.authUid ? ['users', state.user.authUid, 'trophyShelves'] : []);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-[#1b140d] dark:text-white transition-colors duration-300 flex flex-col antialiased relative">
@@ -43,7 +39,7 @@ const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
             onClick={() => onNavigate(AppView.PROFILE)}
             className="size-11 shrink-0 rounded-2xl border-2 border-primary overflow-hidden shadow-lg cursor-pointer active:scale-95 transition-transform"
           >
-            <img alt="User" className="w-full h-full object-cover grayscale" src="https://picsum.photos/id/64/150/150" />
+            <img alt="User" className="w-full h-full object-cover grayscale" src={state.user.avatar} />
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tight leading-none italic uppercase">Trophy Room</h1>
@@ -51,7 +47,10 @@ const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="flex size-11 items-center justify-center rounded-2xl bg-white dark:bg-stone-800 shadow-sm border border-stone-100 dark:border-stone-700 active:scale-90 transition-all">
+          <button
+            onClick={() => onNavigate(AppView.NOTIFICATIONS)}
+            className="flex size-11 items-center justify-center rounded-2xl bg-white dark:bg-stone-800 shadow-sm border border-stone-100 dark:border-stone-700 active:scale-90 transition-all"
+          >
             <span className="material-icons-round text-slate-400">notifications</span>
           </button>
           <button 
@@ -93,12 +92,15 @@ const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
 
         {/* Shelf Sections */}
         <div className="space-y-16 px-6">
+          {categories.length === 0 && (
+            <div className="text-sm text-slate-400">No trophies to display yet.</div>
+          )}
           {categories.map((cat, idx) => (
             <section key={idx}>
               <div className="flex items-center gap-4 mb-6 px-1">
-                <div className={`${cat.bgColor} px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-slate-50 dark:border-white/5`}>
-                  <span className={`material-icons-round text-sm ${cat.color} font-variation-fill`}>{cat.icon}</span>
-                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${cat.color}`}>{cat.title}</span>
+                <div className={`${cat.bgColor || 'bg-slate-100 dark:bg-stone-800'} px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-slate-50 dark:border-white/5`}>
+                  <span className={`material-icons-round text-sm ${cat.color || 'text-slate-400'} font-variation-fill`}>{cat.icon || 'military_tech'}</span>
+                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${cat.color || 'text-slate-400'}`}>{cat.title}</span>
                 </div>
                 <div className="h-0.5 flex-1 bg-slate-100 dark:bg-stone-800 rounded-full"></div>
               </div>
@@ -107,10 +109,23 @@ const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
                 {/* Shelf Graphic */}
                 <div className="absolute bottom-0 left-0 w-full h-5 bg-slate-100 dark:bg-stone-800 rounded-full shadow-inner border border-slate-200 dark:border-stone-700/50"></div>
                 <div className="flex justify-between items-end px-2 gap-4 relative z-10">
-                  {cat.items.map((item, iIdx) => (
+                  {(cat.items || []).map((item, iIdx) => (
                     <div 
                       key={iIdx} 
-                      onClick={() => !item.locked && onNavigate(AppView.BADGE_DETAIL_MODAL)}
+                      onClick={() => {
+                        if (item.locked) return;
+                        if (item.challengeId) {
+                          onNavigate((`${AppView.CHALLENGE_DETAIL_LEADERBOARD}?planId=${encodeURIComponent(item.challengeId)}&from=trophy_room`) as AppView);
+                          return;
+                        }
+                        if (item.badgeId) {
+                          onNavigate((`${AppView.BADGE_DETAIL_MODAL}?badgeId=${item.badgeId}&from=trophy_room`) as AppView);
+                          return;
+                        }
+                        if (item.route) {
+                          onNavigate(item.route as AppView);
+                        }
+                      }}
                       className={`flex flex-col items-center group cursor-pointer transition-all ${item.locked ? 'opacity-30 grayscale cursor-not-allowed' : 'active:scale-90'}`}
                     >
                       <div className={`size-16 mb-4 flex items-center justify-center shadow-2xl relative ${item.scale ? 'scale-125 mb-6' : ''} ${item.rotate || ''}`}>
@@ -158,8 +173,9 @@ const TrophyRoomScreen: React.FC<Props> = ({ onNavigate }) => {
         </button>
         <div className="relative -top-12">
           <button 
-            onClick={() => onNavigate(AppView.LOG_WORKOUT)}
-            className="size-16 bg-primary text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40 ring-8 ring-background-light dark:ring-background-dark active:scale-90 transition-all hover:rotate-90 duration-500"
+            onClick={() => canLogWorkout && onNavigate(AppView.LOG_WORKOUT)}
+            disabled={!canLogWorkout}
+            className="size-16 bg-primary text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40 ring-8 ring-background-light dark:ring-background-dark active:scale-90 transition-all hover:rotate-90 duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <span className="material-icons-round text-3xl font-black">add</span>
           </button>

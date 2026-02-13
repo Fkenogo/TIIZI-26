@@ -1,0 +1,35 @@
+mutation CreateNewGroup($name: String!, $description: String, $groupGoal: String) @auth(level: USER) {
+  group_insert(data: {
+    name: $name,
+    description: $description,
+    groupGoal: $groupGoal,
+    ownerId_expr: "auth.uid",
+    createdAt_expr: "request.time"
+  })
+}
+
+query GetMyWorkouts @auth(level: USER) {
+  workouts(where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    workoutType
+    durationMinutes
+    loggedAt
+  }
+}
+
+mutation JoinGroup($groupId: UUID!) @auth(level: USER) {
+  membership_insert(data: {
+    groupId: $groupId,
+    userId_expr: "auth.uid",
+    joinedAt_expr: "request.time"
+  })
+}
+
+query ListPublicGroups @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  groups {
+    id
+    name
+    description
+    groupGoal
+  }
+}

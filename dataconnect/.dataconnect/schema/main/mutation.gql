@@ -1,0 +1,552 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Comment` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  comment_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Comment_Data!
+  ): Comment_KeyOutput! @fdc_generated(from: "Comment", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Group` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  group_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Group_Data!
+  ): Group_KeyOutput! @fdc_generated(from: "Group", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Membership` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  membership_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Membership_Data!
+  ): Membership_KeyOutput! @fdc_generated(from: "Membership", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Workout` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  workout_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Workout_Data!
+  ): Workout_KeyOutput! @fdc_generated(from: "Workout", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Comment` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  comment_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Comment_Data!]!
+  ): [Comment_KeyOutput!]! @fdc_generated(from: "Comment", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Group` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  group_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Group_Data!]!
+  ): [Group_KeyOutput!]! @fdc_generated(from: "Group", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Membership` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  membership_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Membership_Data!]!
+  ): [Membership_KeyOutput!]! @fdc_generated(from: "Membership", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Workout` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  workout_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Workout_Data!]!
+  ): [Workout_KeyOutput!]! @fdc_generated(from: "Workout", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Comment` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Comment`.
+  """
+  comment_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Comment_Data!
+  ): Comment_KeyOutput! @fdc_generated(from: "Comment", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Group` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Group`.
+  """
+  group_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Group_Data!
+  ): Group_KeyOutput! @fdc_generated(from: "Group", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Membership` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Membership`.
+  """
+  membership_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Membership_Data!
+  ): Membership_KeyOutput! @fdc_generated(from: "Membership", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Workout` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Workout`.
+  """
+  workout_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Workout_Data!
+  ): Workout_KeyOutput! @fdc_generated(from: "Workout", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Comment` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Comment`.
+  """
+  comment_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Comment_Data!]!
+  ): [Comment_KeyOutput!]! @fdc_generated(from: "Comment", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Group` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Group`.
+  """
+  group_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Group_Data!]!
+  ): [Group_KeyOutput!]! @fdc_generated(from: "Group", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Membership` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Membership`.
+  """
+  membership_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Membership_Data!]!
+  ): [Membership_KeyOutput!]! @fdc_generated(from: "Membership", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Workout` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Workout`.
+  """
+  workout_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Workout_Data!]!
+  ): [Workout_KeyOutput!]! @fdc_generated(from: "Workout", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Comment` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Comment` or `null` if not found.
+  """
+  comment_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Comment_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Comment_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Comment_Data!
+  ): Comment_KeyOutput @fdc_generated(from: "Comment", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Group` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Group` or `null` if not found.
+  """
+  group_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Group_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Group_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Group_Data!
+  ): Group_KeyOutput @fdc_generated(from: "Group", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Membership` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Membership` or `null` if not found.
+  """
+  membership_update(
+    """
+    The key used to identify the object.
+    """
+    key: Membership_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Membership_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Membership_Data!
+  ): Membership_KeyOutput @fdc_generated(from: "Membership", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Workout` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Workout` or `null` if not found.
+  """
+  workout_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Workout_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Workout_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Workout_Data!
+  ): Workout_KeyOutput @fdc_generated(from: "Workout", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Comment` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  comment_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Comment_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Comment_Data!
+  ): Int! @fdc_generated(from: "Comment", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Group` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  group_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Group_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Group_Data!
+  ): Int! @fdc_generated(from: "Group", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Membership` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  membership_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Membership_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Membership_Data!
+  ): Int! @fdc_generated(from: "Membership", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Workout` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  workout_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Workout_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Workout_Data!
+  ): Int! @fdc_generated(from: "Workout", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Comment` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  comment_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Comment_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Comment_FirstRow
+  ): Comment_KeyOutput @fdc_generated(from: "Comment", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Group` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  group_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Group_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Group_FirstRow
+  ): Group_KeyOutput @fdc_generated(from: "Group", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Membership` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  membership_delete(
+    """
+    The key used to identify the object.
+    """
+    key: Membership_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Membership_FirstRow
+  ): Membership_KeyOutput @fdc_generated(from: "Membership", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Workout` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  workout_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Workout_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Workout_FirstRow
+  ): Workout_KeyOutput @fdc_generated(from: "Workout", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Comment` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  comment_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Comment_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Comment", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Group` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  group_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Group_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Group", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Membership` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  membership_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Membership_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Membership", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Workout` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  workout_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Workout_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Workout", purpose: DELETE_MULTIPLE)
+}

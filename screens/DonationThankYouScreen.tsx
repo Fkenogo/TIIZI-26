@@ -1,73 +1,80 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const DonationThankYouScreen: React.FC<Props> = ({ onNavigate }) => {
+  const [params] = useSearchParams();
+  const amount = params.get('amount') || '';
+  const date = params.get('date') || '';
+  const frequency = params.get('frequency') || '';
+  const { data: impact } = useFirestoreDoc<{ impactMessage?: string }>(['config', 'donationImpact']);
+
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#1b140d] dark:text-white font-display flex flex-col antialiased max-w-[430px] mx-auto">
       <header className="flex items-center p-4 pt-12 pb-2 justify-between shrink-0">
         <button 
           onClick={() => onNavigate(AppView.GROUP_HOME)}
-          className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="text-[#1b140d] dark:text-white flex size-12 shrink-0 items-center justify-start"
         >
-          <span className="material-icons-round text-primary">close</span>
+          <span className="material-icons-round">close</span>
         </button>
-        <h2 className="text-lg font-black italic uppercase tracking-tighter flex-1 text-center pr-12">Confirmed</h2>
+        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Thank You</h2>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-8 pt-8 pb-12">
-        <div className="relative mb-12">
-          <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full scale-150 animate-pulse"></div>
-          <div className="relative flex items-center justify-center w-32 h-32 bg-white dark:bg-slate-800 rounded-[48px] shadow-2xl border-4 border-primary/10">
-            <span className="text-6xl animate-bounce">❤️</span>
+      <main className="flex-1 overflow-y-auto">
+        <div className="px-4">
+          <h1 className="text-[#1b140d] dark:text-white tracking-light text-[32px] font-bold leading-tight text-center pb-3 pt-6">❤️ You're Amazing!</h1>
+          <p className="text-[#9a704c] dark:text-primary/80 text-center text-sm px-8 mb-4">Your generosity keeps our community thriving and our library growing.</p>
+        </div>
+
+        <div className="px-4">
+          <div className="flex items-stretch justify-between gap-4 rounded-xl bg-white dark:bg-[#2d2218] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-primary/10">
+            <div className="flex flex-col gap-1 flex-[2_2_0px]">
+              <p className="text-primary text-base font-bold leading-tight">Community Impact</p>
+              <p className="text-[#9a704c] dark:text-white/70 text-sm font-normal leading-normal">{impact?.impactMessage || ''}</p>
+            </div>
+            <div className="w-full aspect-square rounded-lg flex-1 bg-gradient-to-br from-primary/10 via-transparent to-primary/5"></div>
           </div>
         </div>
 
-        <h3 className="text-4xl font-black tracking-tighter leading-tight mb-4 text-center uppercase italic">
-          Thank you for supporting Tiizi
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-lg font-medium leading-relaxed text-center px-6 mb-12">
-          Your support helps keep the community growing. We appreciate you being a vital part of this collective.
-        </p>
+        <div className="mt-6">
+          <h3 className="text-[#1b140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Donation Receipt</h3>
+        </div>
 
-        {/* Share Section */}
-        <div className="w-full max-w-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-[40px] p-8 shadow-sm">
-          <h4 className="text-slate-400 dark:text-slate-500 text-[10px] font-black leading-normal tracking-[0.3em] uppercase text-center mb-8">Share your impact</h4>
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-5 bg-primary/5 dark:bg-primary/10 p-5 rounded-[28px] w-full border border-primary/10 group cursor-pointer active:scale-95 transition-all">
-              <div className="size-12 rounded-2xl bg-primary flex items-center justify-center text-white shrink-0 shadow-lg group-hover:rotate-12 transition-transform">
-                <span className="material-icons-round text-2xl font-variation-fill">stars</span>
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-base font-black leading-tight uppercase tracking-tight">Tiizi Supporter</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Badge posted to feed</p>
-              </div>
-              <div className="ml-auto">
-                <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-inner">
-                  <span className="material-icons-round text-sm font-black">check</span>
-                </div>
-              </div>
+        <div className="px-4">
+          <div className="bg-white dark:bg-[#2d2218] rounded-xl p-2 shadow-sm border border-black/5 dark:border-white/5">
+            <div className="flex justify-between gap-x-6 py-3 px-2 border-b border-background-light dark:border-background-dark">
+              <p className="text-[#9a704c] dark:text-white/60 text-sm font-normal leading-normal">Amount</p>
+              <p className="text-[#1b140d] dark:text-white text-sm font-bold leading-normal text-right">{amount ? `$${amount}` : ''}</p>
+            </div>
+            <div className="flex justify-between gap-x-6 py-3 px-2 border-b border-background-light dark:border-background-dark">
+              <p className="text-[#9a704c] dark:text-white/60 text-sm font-normal leading-normal">Date</p>
+              <p className="text-[#1b140d] dark:text-white text-sm font-normal leading-normal text-right">{date}</p>
+            </div>
+            <div className="flex justify-between gap-x-6 py-3 px-2">
+              <p className="text-[#9a704c] dark:text-white/60 text-sm font-normal leading-normal">Frequency</p>
+              <p className="text-[#1b140d] dark:text-white text-sm font-normal leading-normal text-right">{frequency}</p>
             </div>
           </div>
         </div>
+
+        <div className="p-8 text-center">
+          <span className="material-icons-round text-primary/40 text-5xl">celebration</span>
+        </div>
       </main>
 
-      <div className="p-8 pb-16 space-y-4">
+      <div className="p-4 bg-background-light dark:bg-background-dark pb-8">
         <button 
           onClick={() => onNavigate(AppView.GROUP_HOME)}
-          className="w-full bg-primary text-white font-black py-6 rounded-[28px] shadow-2xl shadow-primary/30 active:scale-95 transition-all uppercase tracking-widest text-sm italic"
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]"
         >
-          Back to Group
-        </button>
-        <button 
-           onClick={() => onNavigate(AppView.SUPPORT_HISTORY)}
-           className="w-full bg-transparent text-slate-400 font-black py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] hover:text-primary transition-colors"
-        >
-          View Contribution History
+          Return Home
         </button>
       </div>
     </div>

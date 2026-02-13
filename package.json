@@ -6,15 +6,29 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit:playwright": "node scripts/playwright-audit.mjs",
+    "audit:playwright:start": "PLAYWRIGHT_START_SERVER=true node scripts/playwright-audit.mjs",
+    "firebase:preview": "npm run build && firebase hosting:channel:deploy web-preview --expires 7d",
+    "firebase:deploy": "npm run build && firebase deploy --only hosting,firestore:rules,firestore:indexes",
+    "firebase:deploy:full": "npm run build && firebase deploy --only hosting,firestore,functions",
+    "reset:local": "node scripts/reset-local-dev.mjs",
+    "dev:clean:emulators": "bash scripts/dev-clean-start.sh",
+    "dev:app": "vite --host 127.0.0.1 --port 3002 --strictPort",
+    "seed:exercise-engine": "node scripts/seed-exercise-engine.mjs",
+    "preview:app": "vite preview --host 127.0.0.1 --port 4174 --strictPort"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
+    "firebase": "^11.6.0",
+    "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react": "^19.2.4"
+    "react-router-dom": "^6.30.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "playwright": "^1.52.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

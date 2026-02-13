@@ -1,12 +1,6 @@
 
 export enum AppView {
-  WELCOME = 'welcome',
-  ONBOARDING_LOGGING = 'onboarding_logging',
-  ONBOARDING_COMMUNITY = 'onboarding_community',
   LOGIN = 'login',
-  SIGNUP = 'signup',
-  VERIFY = 'verify',
-  PROFILE_SETUP = 'profile_setup',
   GROUPS_LIST = 'groups_list',
   GROUP_HOME = 'group_home',
   GROUP_CHAT = 'group_chat',
@@ -63,8 +57,11 @@ export enum AppView {
   CHALLENGE_DETAIL_LEADERBOARD = 'challenge_detail_leaderboard',
   SUPPORT_HISTORY = 'support_history',
   SHARE_MY_PROFILE = 'share_my_profile',
-  SCAN_QR_CODE = 'scan_qr_code',
   GROUP_JOIN_SHEET = 'group_join_sheet',
+  SUPPORT_REQUEST = 'support_request',
+  SUPPORT_REQUEST_DETAIL = 'support_request_detail',
+  ADMIN_SUPPORT_REQUESTS = 'admin_support_requests',
+  ADMIN_EXERCISE_ENGINE = 'admin_exercise_engine',
   ACHIEVEMENTS_HUB = 'achievements_hub',
   ACHIEVEMENT_DETAIL = 'achievement_detail',
   BADGE_UNLOCK = 'badge_unlock',
@@ -80,12 +77,36 @@ export enum AppView {
   TROPHY_ROOM = 'trophy_room',
   BADGE_DETAIL_MODAL = 'badge_detail_modal',
   YEAR_IN_REVIEW = 'year_in_review',
-  NEW_YEAR_CHALLENGE = 'new_year_challenge'
+  NEW_YEAR_CHALLENGE = 'new_year_challenge',
+  MILESTONES = 'milestones',
+  COMMUNITY_VALUES = 'community_values',
+  CONNECTED_ACCOUNTS = 'connected_accounts'
 }
 
 export type TabType = 'home' | 'feed' | 'groups' | 'challenges';
 
-export type ReactionType = 'like' | 'clap' | 'celebrate';
+export type ReactionType = 'like' | 'clap' | 'celebrate' | 'kudos';
+
+export interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  avatar: string;
+  content: string;
+  time: string;
+  likes: number;
+  replies: CommentReply[];
+}
+
+export interface CommentReply {
+  id: string;
+  userId: string;
+  userName: string;
+  avatar: string;
+  content: string;
+  time: string;
+  likes: number;
+}
 
 export interface Post {
   id: string;
@@ -95,11 +116,48 @@ export interface Post {
   time: string;
   content: string;
   type: 'workout' | 'streak' | 'text';
+  image?: string;
+  shareCount: number;
+  bookmarkCount: number;
   likes: number;
   comments: number;
   exercise?: string;
   details?: string;
   reactions: Record<ReactionType, number>;
+}
+
+export interface GroupInvite {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  category?: string;
+  memberCount: number;
+  isPrivate?: boolean;
+  inviteCode?: string;
+}
+
+export interface JoinRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  avatar: string;
+  note?: string;
+  status: 'pending' | 'approved' | 'denied';
+  time: string;
+}
+
+export interface SupportRequest {
+  id: string;
+  title: string;
+  description: string;
+  amount: number;
+  goalAmount?: number;
+  pledgedTotal?: number;
+  urgency: 'low' | 'medium' | 'high';
+  status: 'pending' | 'approved' | 'denied';
+  createdAt?: string;
+  createdBy?: string;
 }
 
 export interface Message {

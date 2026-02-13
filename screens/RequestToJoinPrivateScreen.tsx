@@ -1,12 +1,23 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useFirestoreDoc } from '../utils/useFirestore';
+import { useTiizi } from '../context/AppContext';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const RequestToJoinPrivateScreen: React.FC<Props> = ({ onNavigate }) => {
+  const [params] = useSearchParams();
+  const { requestToJoin, addToast, state } = useTiizi();
+  const groupId = params.get('groupId') || '';
+  const { data: group } = useFirestoreDoc<{ name?: string; image?: string }>(
+    groupId ? ['groups', groupId] : []
+  );
+  const [note, setNote] = useState('');
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
       {/* Top App Bar */}
@@ -24,15 +35,17 @@ const RequestToJoinPrivateScreen: React.FC<Props> = ({ onNavigate }) => {
         <div className="flex flex-col items-center gap-8 py-10">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 opacity-40"></div>
-            <img 
-              className="relative size-36 rounded-[48px] object-cover border-4 border-white dark:border-slate-800 shadow-2xl" 
-              src="https://picsum.photos/id/117/300/300" 
-              alt="Group Profile" 
-            />
+            {group?.image && (
+              <img 
+                className="relative size-36 rounded-[48px] object-cover border-4 border-white dark:border-slate-800 shadow-2xl" 
+                src={group.image} 
+                alt="Group Profile" 
+              />
+            )}
           </div>
           
           <div className="text-center space-y-2">
-            <h1 className="text-[36px] font-black tracking-tight leading-tight">Nairobi Elite</h1>
+            <h1 className="text-[36px] font-black tracking-tight leading-tight">{group?.name || 'Private Group'}</h1>
             <div className="flex items-center justify-center gap-2 text-primary">
               <span className="material-icons-round text-lg">lock</span>
               <p className="text-sm font-black uppercase tracking-[0.2em]">Private Group</p>
@@ -43,6 +56,8 @@ const RequestToJoinPrivateScreen: React.FC<Props> = ({ onNavigate }) => {
         <div className="space-y-4">
           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">Add a Note</label>
           <textarea 
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
             className="w-full bg-white dark:bg-slate-800 border-none rounded-[36px] p-8 text-sm font-bold focus:ring-4 focus:ring-primary/10 shadow-sm transition-all min-h-[180px] resize-none placeholder:text-slate-300" 
             placeholder="Introduce yourself to the group admin..."
           />
@@ -58,7 +73,23 @@ const RequestToJoinPrivateScreen: React.FC<Props> = ({ onNavigate }) => {
 
       <div className="p-8 pb-12">
         <button 
-          onClick={() => onNavigate(AppView.FIND_GROUPS)}
+          onClick={async () => {
+            if (!groupId) {
+              addToast('No group selected for this request.', 'error');
+              return;
+            }
+            if (!state.user.authUid) {
+              onNavigate(AppView.LOGIN);
+              return;
+            }
+            try {
+              await requestToJoin(groupId, note);
+              addToast('Request sent.', 'success');
+              onNavigate(AppView.FIND_GROUPS);
+            } catch {
+              addToast('Could not send join request.', 'error');
+            }
+          }}
           className="w-full bg-primary hover:bg-orange-600 text-white font-black py-6 rounded-[28px] shadow-2xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
         >
           Send Join Request

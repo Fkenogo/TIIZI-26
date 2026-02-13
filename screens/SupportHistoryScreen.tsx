@@ -1,17 +1,38 @@
 
 import React, { useState } from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
+import { useSearchParams } from 'react-router-dom';
+import { useFirestoreCollection, useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const SupportHistoryScreen: React.FC<Props> = ({ onNavigate }) => {
-  const [activeTab, setActiveTab] = useState<'Platform' | 'Pledges'>('Platform');
-
-  const handleReceiptClick = () => {
-    alert("Receipt generated. Downloading KES summary...");
-  };
+  const [params] = useSearchParams();
+  const { addToast, state } = useTiizi();
+  const initialTab = params.get('tab') === 'pledges' ? 'Pledges' : 'Platform';
+  const [activeTab, setActiveTab] = useState<'Platform' | 'Pledges'>(initialTab);
+  const { items: platformDonations } = useFirestoreCollection<{
+    id: string;
+    amount?: number;
+    date?: string;
+    frequency?: string;
+    type?: string;
+  }>(state.user.authUid ? ['users', state.user.authUid, 'platformDonations'] : []);
+  const { data: platformSummary } = useFirestoreDoc<{ lifetimeAmount?: number; level?: string }>(
+    state.user.authUid ? ['users', state.user.authUid, 'platformSummary', 'summary'] : []
+  );
+  const { items: groupPledges } = useFirestoreCollection<{
+    id: string;
+    amount?: number;
+    title?: string;
+    group?: string;
+    status?: string;
+    frequency?: string;
+    image?: string;
+  }>(state.user.authUid ? ['users', state.user.authUid, 'groupPledges'] : []);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#1b140d] dark:text-white font-sans flex flex-col antialiased">
@@ -64,8 +85,8 @@ const SupportHistoryScreen: React.FC<Props> = ({ onNavigate }) => {
                     <h3 className="text-2xl font-display font-black tracking-tight">Lifetime Contribution</h3>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-4xl font-display font-black text-primary leading-none">KES 48,500</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level: Gold Supporter</p>
+                    <p className="text-4xl font-display font-black text-primary leading-none">KES {platformSummary?.lifetimeAmount || 0}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level: {platformSummary?.level || '—'}</p>
                   </div>
                 </div>
               </div>
@@ -75,24 +96,26 @@ const SupportHistoryScreen: React.FC<Props> = ({ onNavigate }) => {
             <section className="px-6 space-y-6">
               <h3 className="text-base font-display font-black uppercase tracking-widest text-slate-400 px-2">Recent Transactions</h3>
               <div className="space-y-2">
-                {[
-                  { amount: 'KES 2,500', date: 'Nov 12, 2023', type: 'Monthly', icon: 'favorite' },
-                  { amount: 'KES 1,000', date: 'Oct 24, 2023', type: 'One-time', icon: 'volunteer_activism' },
-                  { amount: 'KES 2,500', date: 'Oct 12, 2023', type: 'Monthly', icon: 'favorite' },
-                  { amount: 'KES 5,000', date: 'Sep 15, 2023', type: 'One-time', icon: 'volunteer_activism' }
-                ].map((t, i) => (
-                  <div key={i} className="flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-[32px] border border-slate-50 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
+                {platformDonations.length === 0 && (
+                  <div className="text-sm text-slate-400">No platform support history yet.</div>
+                )}
+                {platformDonations.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-[32px] border border-slate-50 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
                     <div className="flex items-center gap-5">
                       <div className="size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <span className="material-symbols-rounded text-2xl">{t.icon}</span>
+                        <span className="material-symbols-rounded text-2xl">{t.type || 'favorite'}</span>
                       </div>
                       <div>
-                        <p className="font-black text-base">{t.amount}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.date} • {t.type}</p>
+                        <p className="font-black text-base">KES {t.amount || 0}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.date || '—'} • {t.frequency || 'One-time'}</p>
                       </div>
                     </div>
                     <button 
-                      onClick={handleReceiptClick}
+                      onClick={() => {
+                        addToast('Opening receipt details...', 'info');
+                        const numeric = Number(t.amount || 0);
+                        onNavigate((`${AppView.DONATION_THANK_YOU}?amount=${encodeURIComponent(String(numeric))}&date=${encodeURIComponent(String(t.date || ''))}&frequency=${encodeURIComponent(String(t.frequency || ''))}`) as AppView);
+                      }}
                       className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-primary transition-all active:scale-95"
                     >
                       Receipt
@@ -111,25 +134,31 @@ const SupportHistoryScreen: React.FC<Props> = ({ onNavigate }) => {
              </div>
 
              <div className="px-6 space-y-4">
-                {[
-                  { amount: '$50.00', title: 'Medical Support for Sarah', group: 'Morning Yoga Warriors', status: 'Pledged', icon: 'pending_actions', img: 'https://picsum.photos/id/160/200/200' },
-                  { amount: '$30.00', title: 'Emergency Vet Fund', group: 'Pet Lovers Collective', status: 'Completed', icon: 'check_circle', img: 'https://picsum.photos/id/102/200/200' },
-                  { amount: '$100.00', title: 'Tuition Assistance', group: 'Study Buddies', status: 'Completed', icon: 'check_circle', img: 'https://picsum.photos/id/120/200/200' },
-                  { amount: '$45.00', title: 'Community Garden Tools', group: 'Green Thumb Neighbors', status: 'Completed', icon: 'check_circle', img: 'https://picsum.photos/id/121/200/200' }
-                ].map((p, i) => (
-                  <div key={i} className="bg-white dark:bg-slate-800 rounded-[32px] overflow-hidden border border-slate-50 dark:border-slate-800 shadow-sm flex gap-6 p-6 active:scale-[0.98] transition-all">
+                {groupPledges.length === 0 && (
+                  <div className="text-sm text-slate-400">No pledges yet.</div>
+                )}
+                {groupPledges.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => onNavigate((`${AppView.PLEDGE_RECORDED}?amount=${encodeURIComponent(String(p.amount || 0))}&title=${encodeURIComponent(p.title || '')}&group=${encodeURIComponent(p.group || '')}&status=${encodeURIComponent(p.status || '')}&frequency=${encodeURIComponent(p.frequency || '')}`) as AppView)}
+                    className="w-full text-left bg-white dark:bg-slate-800 rounded-[32px] overflow-hidden border border-slate-50 dark:border-slate-800 shadow-sm flex gap-6 p-6 active:scale-[0.98] transition-all"
+                  >
                     <div className="flex-1 space-y-4">
                       <div className="space-y-1">
-                        <p className="text-primary text-[10px] font-black uppercase tracking-widest">Pledged: {p.amount}</p>
-                        <h4 className="font-display font-black text-base leading-tight">{p.title}</h4>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.group}</p>
+                        <p className="text-primary text-[10px] font-black uppercase tracking-widest">Pledged: ${p.amount || 0}</p>
+                        <h4 className="font-display font-black text-base leading-tight">{p.title || 'Pledge'}</h4>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.group || ''}</p>
                       </div>
                       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${p.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
-                        {p.status} <span className="material-symbols-rounded text-[14px]">{p.icon}</span>
+                        {p.status || 'Pledged'} <span className="material-symbols-rounded text-[14px]">{p.status === 'Completed' ? 'check_circle' : 'pending_actions'}</span>
                       </div>
                     </div>
-                    <img className="size-24 rounded-[28px] object-cover grayscale opacity-80 shadow-inner" src={p.img} alt="pledge" />
-                  </div>
+                    {p.image ? (
+                      <img className="size-24 rounded-[28px] object-cover grayscale opacity-80 shadow-inner" src={p.image} alt="pledge" />
+                    ) : (
+                      <div className="size-24 rounded-[28px] bg-slate-100 dark:bg-slate-700"></div>
+                    )}
+                  </button>
                 ))}
              </div>
 

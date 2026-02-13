@@ -1,163 +1,229 @@
 
-import React from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useTiizi } from '../context/AppContext';
+import { exportNodeAsPng } from '../components/exportImage';
+import { useFirestoreCollection, useFirestoreDoc } from '../utils/useFirestore';
+import { limit, orderBy } from 'firebase/firestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const ChallengeDetailLeaderboardScreen: React.FC<Props> = ({ onNavigate }) => {
-  const ranking = [
-    { rank: 1, name: 'Sarah K.', val: '95', total: '100m', streak: 14, avatar: 'https://picsum.photos/id/64/100/100', isKing: true },
-    { rank: 2, name: 'Marcus', val: '82', total: '100m', streak: 8, avatar: 'https://picsum.photos/id/65/100/100' },
-    { rank: 3, name: 'Elena', val: '75', total: '100m', streak: 12, avatar: 'https://picsum.photos/id/45/100/100' },
-    { rank: 4, name: 'You (Alex)', val: '45', total: '100m', streak: 5, avatar: 'https://picsum.photos/id/10/100/100', isYou: true },
-    { rank: 5, name: 'David R.', val: '38', total: '100m', streak: 0, avatar: 'https://picsum.photos/id/11/100/100' }
-  ];
+  const [params] = useSearchParams();
+  const planId = params.get('planId') || '';
+  const from = params.get('from');
+  const [activeTab, setActiveTab] = useState<'overall' | 'weekly'>('overall');
+  const { data: challenge } = useFirestoreDoc<{ title?: string }>(
+    planId ? ['challenges', planId] : []
+  );
+  const title = challenge?.title || 'Challenge Leaderboard';
+  const backView = from === 'priority_alerts'
+    ? AppView.PRIORITY_ALERTS
+    : from === 'milestones'
+      ? AppView.MILESTONES
+      : from === 'challenges_list'
+        ? AppView.CHALLENGES_LIST
+      : from === 'notifications'
+        ? AppView.NOTIFICATIONS
+        : from === 'trophy_room'
+          ? AppView.TROPHY_ROOM
+        : from === 'group_join_sheet'
+          ? AppView.GROUP_JOIN_SHEET
+          : AppView.GROUP_HOME;
+  const { addToast, state } = useTiizi();
+  const canLogWorkout = !!state.activeChallenge?.id;
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const leaderboardConstraints = useMemo(() => [orderBy('rank', 'asc'), limit(50)], []);
+  const { items: ranking } = useFirestoreCollection<{
+    id: string;
+    rank: number;
+    userId?: string;
+    name: string;
+    reps?: number;
+    progress?: number;
+    trendUp?: boolean;
+    avatar?: string;
+  }>(planId ? ['challenges', planId, 'leaderboard'] : [], leaderboardConstraints);
+  const podium = ranking.slice(0, 3);
+  const list = ranking.slice(3);
+  const userEntry = useMemo(
+    () => ranking.find((entry) => entry.userId && entry.userId === state.user.authUid) || null,
+    [ranking, state.user.authUid]
+  );
+
+  const handleShare = async () => {
+    const shareData = {
+      title,
+      text: `Leaderboard update for ${title}`,
+      url: window.location.href
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        addToast('Share sheet opened', 'info');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+        addToast('Link copied to clipboard');
+      } else {
+        addToast('Sharing not supported on this device', 'error');
+      }
+    } catch {
+      addToast('Could not share this leaderboard', 'error');
+    }
+  };
+
+  const handleExport = async () => {
+    if (!contentRef.current) return;
+    try {
+      await exportNodeAsPng(contentRef.current, { fileName: 'tiizi-leaderboard.png', backgroundColor: '#f8f7f6' });
+      addToast('Leaderboard saved as image');
+    } catch {
+      addToast('Could not export image', 'error');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark font-sans text-[#0d1b12] dark:text-white flex flex-col antialiased relative overflow-x-hidden">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-5 pt-12 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-[#1b140d] dark:text-[#f8f7f6] flex flex-col antialiased relative overflow-x-hidden max-w-md mx-auto pb-24">
+      <header className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-30">
         <button 
-          onClick={() => onNavigate(AppView.GROUP_HOME)}
-          className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          onClick={() => onNavigate(backView)}
+          className="text-[#1b140d] dark:text-[#f8f7f6] flex size-12 shrink-0 items-center"
         >
-          <span className="material-symbols-rounded text-primary">arrow_back_ios_new</span>
+          <span className="material-icons-round">arrow_back_ios</span>
         </button>
-        <h2 className="text-lg font-display font-black tracking-tight flex-1 text-center pr-10 uppercase">Challenge Ranking</h2>
-        <span className="material-symbols-rounded text-primary cursor-pointer">share</span>
+        <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center">{title}</h2>
+        <div className="flex w-12 items-center justify-end">
+          <button onClick={handleShare}>
+            <span className="material-icons-round">share</span>
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto pb-32">
-        {/* Challenge Banner Card */}
-        <div className="p-5">
-          <div className="flex flex-col bg-white dark:bg-[#1a2e21] rounded-[36px] overflow-hidden shadow-xl border border-slate-50 dark:border-slate-800">
-            <div className="w-full aspect-video bg-center bg-cover" style={{ backgroundImage: 'url("https://picsum.photos/id/117/800/450")' }}></div>
-            <div className="p-8 space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-display font-black tracking-tight leading-tight">Group Progress: 65%</h3>
-                <span className="text-[10px] font-black px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full uppercase tracking-widest">Active</span>
-              </div>
-              <div className="space-y-4">
-                <div className="h-2.5 w-full bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
-                  <div className="h-full bg-[#13ec5b] rounded-full shadow-[0_0_12px_#13ec5b] transition-all duration-1000" style={{ width: '65%' }}></div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="space-y-1">
-                    <p className="text-emerald-500 text-sm font-black uppercase tracking-tight">12 days remaining</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Goal: 5,000 total minutes</p>
-                  </div>
-                  <div className="flex -space-x-3">
-                    {[64, 65, 40].map(id => (
-                      <img key={id} className="size-9 rounded-full ring-4 ring-white dark:ring-[#1a2e21] object-cover" src={`https://picsum.photos/id/${id}/100/100`} alt="user" />
-                    ))}
-                    <div className="size-9 rounded-full bg-emerald-500/20 text-emerald-500 border-4 border-white dark:border-[#1a2e21] flex items-center justify-center text-[10px] font-black">+5</div>
-                  </div>
-                </div>
-              </div>
+        <div ref={contentRef}>
+          <div className="pt-8 pb-4 px-4 flex justify-center items-end gap-2 relative">
+          {podium.length === 0 && (
+            <div className="text-sm text-[#9a704c]">No leaderboard entries yet.</div>
+          )}
+          {podium.length > 0 && (
+          <>
+          <div className="flex flex-col items-center flex-1 pb-4">
+            <div className="relative mb-3">
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-20 h-20 border-4 border-white dark:border-gray-800 shadow-lg" style={{ backgroundImage: `url("${podium[1]?.avatar || ''}")` }}></div>
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-200 text-gray-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white dark:border-gray-800">2</div>
             </div>
+            <p className="text-sm font-bold text-[#1b140d] dark:text-[#f8f7f6] text-center truncate w-full px-1">{podium[1]?.name || '—'}</p>
+            <p className="text-xs text-[#9a704c] font-medium">{podium[1]?.reps || 0}</p>
           </div>
+          <div className="flex flex-col items-center flex-1 pb-10">
+            <div className="relative mb-3">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-primary animate-bounce">
+                <span className="material-icons-round text-3xl" style={{ fontVariationSettings: '"FILL" 1' }}>workspace_premium</span>
+              </div>
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-28 h-28 border-4 border-primary shadow-xl" style={{ backgroundImage: `url("${podium[0]?.avatar || ''}")` }}></div>
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold border-2 border-white dark:border-gray-800">1</div>
+            </div>
+            <p className="text-base font-bold text-[#1b140d] dark:text-[#f8f7f6] text-center truncate w-full px-1">{podium[0]?.name || '—'}</p>
+            <p className="text-sm text-primary font-bold">{podium[0]?.reps || 0}</p>
+          </div>
+          <div className="flex flex-col items-center flex-1 pb-4">
+            <div className="relative mb-3">
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-20 h-20 border-4 border-white dark:border-gray-800 shadow-lg" style={{ backgroundImage: `url("${podium[2]?.avatar || ''}")` }}></div>
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#cd7f32] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white dark:border-gray-800">3</div>
+            </div>
+            <p className="text-sm font-bold text-[#1b140d] dark:text-[#f8f7f6] text-center truncate w-full px-1">{podium[2]?.name || '—'}</p>
+            <p className="text-xs text-[#9a704c] font-medium">{podium[2]?.reps || 0}</p>
+          </div>
+          </>
+          )}
         </div>
 
-        {/* Podium */}
-        <div className="flex justify-center items-end gap-3 px-6 py-12">
-          {/* 2nd */}
-          <div className="flex flex-col items-center flex-1 pb-4 group cursor-pointer" onClick={() => onNavigate(AppView.PROFILE)}>
-            <div className="relative mb-4">
-              <div className="size-20 rounded-full border-4 border-slate-200 overflow-hidden shadow-lg group-hover:scale-105 transition-transform" style={{ backgroundImage: 'url("https://picsum.photos/id/65/200/200")', backgroundSize: 'cover' }}></div>
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-slate-300 drop-shadow-sm">
-                <span className="material-symbols-rounded text-3xl font-variation-fill">workspace_premium</span>
-              </div>
-            </div>
-            <span className="font-display font-black text-sm uppercase tracking-tight">Marcus</span>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">2nd</span>
-          </div>
-
-          {/* 1st */}
-          <div className="flex flex-col items-center flex-1 pb-10 group cursor-pointer" onClick={() => onNavigate(AppView.PROFILE)}>
-            <div className="relative mb-4">
-              <div className="size-28 rounded-full border-4 border-yellow-400 overflow-hidden shadow-2xl ring-8 ring-yellow-400/10 group-hover:scale-105 transition-transform" style={{ backgroundImage: 'url("https://picsum.photos/id/64/300/300")', backgroundSize: 'cover' }}></div>
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-yellow-400 drop-shadow-xl animate-bounce">
-                <span className="material-symbols-rounded text-5xl font-variation-fill">workspace_premium</span>
-              </div>
-            </div>
-            <span className="font-display font-black text-base uppercase tracking-tight">Sarah K.</span>
-            <span className="text-[10px] font-black text-yellow-600 uppercase tracking-[0.3em] mt-1">King</span>
-          </div>
-
-          {/* 3rd */}
-          <div className="flex flex-col items-center flex-1 pb-4 group cursor-pointer" onClick={() => onNavigate(AppView.PROFILE)}>
-            <div className="relative mb-4">
-              <div className="size-20 rounded-full border-4 border-orange-400 overflow-hidden shadow-lg group-hover:scale-105 transition-transform" style={{ backgroundImage: 'url("https://picsum.photos/id/45/200/200")', backgroundSize: 'cover' }}></div>
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-orange-400 drop-shadow-sm">
-                <span className="material-symbols-rounded text-3xl font-variation-fill">workspace_premium</span>
-              </div>
-            </div>
-            <span className="font-display font-black text-sm uppercase tracking-tight">Elena</span>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">3rd</span>
+        <div className="flex px-4 py-6">
+          <div className="flex h-12 flex-1 items-center justify-center rounded-xl bg-[#f3ede7] dark:bg-gray-800 p-1.5">
+            <button
+              onClick={() => setActiveTab('overall')}
+              className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold transition-all ${activeTab === 'overall' ? 'bg-white dark:bg-gray-700 shadow-sm text-[#1b140d] dark:text-white' : 'text-[#9a704c]'}`}
+            >
+              Overall Progress
+            </button>
+            <button
+              onClick={() => setActiveTab('weekly')}
+              className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold transition-all ${activeTab === 'weekly' ? 'bg-white dark:bg-gray-700 shadow-sm text-[#1b140d] dark:text-white' : 'text-[#9a704c]'}`}
+            >
+              Weekly Streaks
+            </button>
           </div>
         </div>
+        <div className="flex justify-end px-4 -mt-2 pb-2">
+          <button
+            onClick={handleExport}
+            className="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-1"
+          >
+            <span className="material-icons-round text-sm">download</span>
+            Download Image
+          </button>
+        </div>
 
-        {/* Detailed Rankings */}
-        <section className="bg-white dark:bg-background-dark rounded-t-[48px] shadow-[0_-12px_40px_rgba(0,0,0,0.08)] pt-6">
-          <h2 className="text-xl font-display font-black tracking-tight px-8 py-6 uppercase tracking-[0.1em]">Detailed Rankings</h2>
-          <div className="divide-y divide-slate-50 dark:divide-slate-800">
-            {ranking.map((user) => (
-              <div 
-                key={user.rank} 
-                onClick={() => onNavigate(AppView.PROFILE)}
-                className={`flex items-center gap-5 px-8 py-6 transition-all cursor-pointer active:bg-slate-50 dark:active:bg-white/5 ${user.isYou ? 'bg-emerald-50 dark:bg-emerald-900/10 border-l-4 border-[#13ec5b]' : ''}`}
-              >
-                <span className={`w-4 font-black text-sm ${user.isYou ? 'text-[#13ec5b]' : 'text-slate-300'}`}>{user.rank}</span>
-                <div className="size-14 rounded-[20px] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-inner shrink-0">
-                  <img src={user.avatar} alt={user.name} className="size-full object-cover" />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-black text-sm uppercase tracking-tight">{user.name}</span>
-                    <div className="flex items-center text-orange-500 gap-1">
-                      <span className="material-symbols-rounded text-sm font-variation-fill">local_fire_department</span>
-                      <span className="text-[10px] font-black">{user.streak}</span>
-                    </div>
+        <div className="flex flex-col space-y-1">
+          {list.map((user) => (
+            <div key={user.rank} className="flex items-center gap-4 bg-white dark:bg-gray-800/20 px-4 min-h-[76px] py-2 mx-4 rounded-xl">
+              <p className="text-[#9a704c] text-sm font-bold w-4">{user.rank}</p>
+              <div className="flex items-center gap-3 flex-1">
+                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-gray-100 dark:border-gray-700" style={{ backgroundImage: `url("${user.avatar}")` }}></div>
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[#1b140d] dark:text-[#f8f7f6] text-sm font-semibold line-clamp-1">{user.name}</p>
+                    {user.trendUp && <span className="material-icons-round text-green-500 text-base">trending_up</span>}
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#13ec5b] rounded-full" style={{ width: `${user.val}%` }}></div>
+                  <div className="flex flex-col mt-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-[#9a704c] text-[10px] font-medium uppercase tracking-wider">{user.reps.toLocaleString()} Reps</p>
+                      <p className="text-[#1b140d] dark:text-[#f8f7f6] text-[10px] font-bold">{user.progress}%</p>
                     </div>
-                    <span className="text-[10px] font-black text-slate-400 w-12 text-right">{user.val}/{user.total}</span>
+                    <div className="w-full overflow-hidden rounded-full bg-[#e7dacf] dark:bg-gray-700 h-1.5">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${user.progress}%` }}></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          ))}
+        </div>
+        </div>
       </main>
 
-      {/* Navigation placeholder */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 p-4 pb-10 flex justify-around items-center z-50">
-        {[
-          { id: 'home', icon: 'home', label: 'Home' },
-          { id: 'feed', icon: 'view_agenda', label: 'Feed' },
-          { id: 'groups', icon: 'groups', label: 'Groups' },
-          { id: 'challenges', icon: 'emoji_events', label: 'Tasks' },
-          { id: 'profile', icon: 'person', label: 'Profile' }
-        ].map((tab) => (
-          <button 
-            key={tab.id} 
-            className={`flex flex-col items-center gap-1.5 transition-all ${tab.id === 'challenges' ? 'text-primary scale-110' : 'text-slate-300'}`}
-            onClick={() => {
-              if (tab.id === 'home') onNavigate(AppView.GROUP_HOME);
-              if (tab.id === 'feed') onNavigate(AppView.GROUP_FEED);
-              if (tab.id === 'groups') onNavigate(AppView.GROUPS_LIST);
-              if (tab.id === 'challenges') onNavigate(AppView.CHALLENGES_LIST);
-              if (tab.id === 'profile') onNavigate(AppView.PROFILE);
-            }}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white dark:bg-[#1b140d] border-t border-gray-100 dark:border-gray-800 p-4 pb-8 z-50">
+        <div className="flex items-center gap-4 bg-primary/10 dark:bg-primary/20 p-3 rounded-2xl border border-primary/20">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative">
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border-2 border-primary" style={{ backgroundImage: `url("${userEntry?.avatar || ''}")` }}></div>
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark">
+                {userEntry?.rank || '—'}
+              </div>
+            </div>
+            <div className="flex flex-col flex-1">
+              <div className="flex justify-between items-baseline">
+                <p className="text-[#1b140d] dark:text-[#f8f7f6] text-sm font-bold">You</p>
+                <p className="text-primary text-xs font-bold">{userEntry?.reps || 0} Reps</p>
+              </div>
+              <p className="text-[#9a704c] text-xs font-medium">Keep going!</p>
+              <div className="w-full overflow-hidden rounded-full bg-white dark:bg-gray-800 h-1.5 mt-2">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${userEntry?.progress || 0}%` }}></div>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => canLogWorkout && onNavigate(AppView.LOG_WORKOUT)}
+            disabled={!canLogWorkout}
+            className="bg-primary text-white h-10 w-10 rounded-full flex items-center justify-center shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className={`material-symbols-rounded text-2xl ${tab.id === 'challenges' ? 'font-variation-fill' : ''}`}>{tab.icon}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest">{tab.label}</span>
+            <span className="material-icons-round" style={{ fontVariationSettings: '"FILL" 1' }}>add</span>
           </button>
-        ))}
+        </div>
       </div>
     </div>
   );

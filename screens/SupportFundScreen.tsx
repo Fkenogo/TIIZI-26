@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppView } from '../types';
 import { useTiizi } from '../context/AppContext';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -11,120 +13,196 @@ interface Props {
 
 const SupportFundScreen: React.FC<Props> = ({ onNavigate, onToggleDark, isDark }) => {
   const { state } = useTiizi();
-  const { user } = state;
+  const [supportNeeds, setSupportNeeds] = useState<any[]>([]);
+  const [recentPledges, setRecentPledges] = useState<any[]>([]);
+  const totalPledged = recentPledges.reduce((sum, pledge) => sum + Number(pledge.amount || 0), 0);
+  const activeNeedsCount = supportNeeds.length;
+
+  useEffect(() => {
+    if (!state.activeGroupId) return;
+    const needsQuery = query(
+      collection(db, 'groups', state.activeGroupId, 'supportRequests'),
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(needsQuery, (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => {
+        const info = docSnap.data() as any;
+        return {
+          id: docSnap.id,
+          title: info.title || 'Support Request',
+          description: info.description || '',
+          amount: info.amount || 0,
+          goalAmount: info.goalAmount || info.goal || info.amount || 0,
+          pledgedTotal: info.pledgedTotal || 0,
+          urgency: info.urgency || 'low'
+        };
+      });
+      setSupportNeeds(data);
+    });
+    return () => unsubscribe();
+  }, [state.activeGroupId]);
+
+  useEffect(() => {
+    if (!state.activeGroupId) return;
+    const pledgeQuery = query(
+      collection(db, 'groups', state.activeGroupId, 'pledges'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(pledgeQuery, (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => {
+        const info = docSnap.data() as any;
+        const createdAt = info.createdAt?.toDate?.() as Date | undefined;
+        return {
+          id: docSnap.id,
+          name: info.userName || 'Member',
+          time: createdAt ? createdAt.toLocaleDateString() : 'recently',
+          amount: info.amount || 0,
+          avatar: info.avatar || ''
+        };
+      });
+      setRecentPledges(data.slice(0, 3));
+    });
+    return () => unsubscribe();
+  }, [state.activeGroupId]);
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
-      <nav className="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 ios-blur px-5 pt-12 pb-4 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#1b140d] dark:text-white font-display flex flex-col antialiased max-w-[430px] mx-auto">
+      <nav className="sticky top-0 z-50 bg-background-light dark:bg-background-dark px-4 pt-12 pb-2 flex items-center justify-between border-b border-[#e7dacf]/30 dark:border-white/10">
         <button 
           onClick={() => onNavigate(AppView.GROUP_HOME)}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-50 dark:border-slate-800"
+          className="text-[#1b140d] dark:text-white flex size-12 shrink-0 items-center"
         >
-          <span className="material-icons-round text-primary">arrow_back</span>
+          <span className="material-icons-round">arrow_back</span>
         </button>
         <div className="flex items-center gap-2">
           <span className="text-2xl">🤝</span>
-          <h2 className="text-lg font-black tracking-tight uppercase italic">Support Fund</h2>
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Group Support Fund</h2>
         </div>
-        <button 
-          onClick={() => onNavigate(AppView.PROFILE)}
-          className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm active:scale-90 transition-transform"
+        <button
+          onClick={() => onNavigate(AppView.HELP_CENTER)}
+          className="flex w-12 items-center justify-end text-[#1b140d] dark:text-white"
         >
-          <img src={user.avatar} alt="Profile" className="w-full h-full object-cover grayscale" />
+          <span className="material-icons-round">info</span>
         </button>
       </nav>
 
-      <main className="px-5 pt-4 space-y-8 pb-32 overflow-y-auto hide-scrollbar">
-        {/* New Intro Section - Spec #3 */}
-        <section className="text-center py-6 space-y-4">
-           <h1 className="text-4xl font-black italic tracking-tighter leading-tight uppercase">Group Support Fund</h1>
-           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed px-6">
-             This fund is for supporting each other with health or medical needs. Contributions are entirely voluntary.
-           </p>
-        </section>
-
-        {/* Mandatory Policy Disclaimer - Spec #3 */}
-        <div className="px-1">
-          <div className="flex flex-col items-stretch gap-4 rounded-[32px] border-2 border-primary/20 bg-primary/[0.03] dark:bg-primary/5 p-8 relative overflow-hidden">
-            <div className="flex flex-col gap-2 relative z-10">
-              <div className="flex items-center gap-2 text-primary">
-                <span className="material-icons-round text-xl">shield</span>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Mandatory Disclaimer</p>
+      <main className="px-4 pt-4 space-y-6 pb-32 overflow-y-auto hide-scrollbar">
+        {/* Fund Overview Card */}
+        <div className="p-0 @container">
+          <div className="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-white/5 border border-[#e7dacf] dark:border-white/10 overflow-hidden">
+            <div className="w-full bg-center bg-no-repeat aspect-[16/6] bg-cover rounded-t-xl" style={{ backgroundImage: 'linear-gradient(135deg, #ee862b 0%, #f7c59f 100%)' }}></div>
+            <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 px-4">
+              <p className="text-[#1b140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Fund Overview</p>
+              <div className="flex items-end gap-3 justify-between">
+                <p className="text-[#9a704c] dark:text-primary/80 text-base font-normal leading-normal">Total Pledged: ${totalPledged} • Active Needs: {activeNeedsCount}</p>
+                <button
+                  onClick={() => onNavigate(AppView.SUPPORT_HISTORY)}
+                  className="flex min-w-[84px] items-center justify-center rounded-lg h-8 px-4 bg-primary text-white text-sm font-medium leading-normal hover:bg-primary/90 transition-colors border border-primary/90 shadow-sm"
+                >
+                  View History
+                </button>
               </div>
-              <p className="text-slate-900 dark:text-white text-base font-black leading-tight italic">
-                Tiizi does not hold or manage funds.
-              </p>
-              <p className="text-slate-600 dark:text-slate-400 text-sm font-medium leading-relaxed mt-2">
-                All contributions are coordinated directly by the group using your agreed mobile money channels.
-              </p>
             </div>
-            <div className="absolute top-[-20%] right-[-10%] size-24 bg-primary/5 rounded-full blur-2xl"></div>
+          </div>
+        </div>
+
+        {/* Policy Disclaimer */}
+        <div className="px-0 @container">
+          <div className="flex flex-1 flex-col items-start justify-between gap-4 rounded-lg border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-950/20 p-5 @[480px]:flex-row @[480px]:items-center">
+            <div className="flex flex-col gap-1">
+              <p className="text-blue-900 dark:text-blue-200 text-base font-bold leading-tight">Tiizi Policy</p>
+              <p className="text-blue-800/80 dark:text-blue-200/70 text-sm font-normal leading-normal">Tiizi does not hold or manage funds. Contributions are coordinated directly by the group.</p>
+            </div>
+            <button
+              onClick={() => onNavigate(AppView.HELP_CENTER)}
+              className="text-sm font-bold leading-normal tracking-[0.015em] flex items-center gap-2 text-blue-900 dark:text-blue-300"
+            >
+              Learn more
+              <span className="material-icons-round text-[20px]">arrow_forward</span>
+            </button>
           </div>
         </div>
 
         {/* Community Needs */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between px-1">
-             <h3 className="text-xl font-black tracking-tight uppercase italic">Active Needs</h3>
-             <span className="text-[9px] font-black text-primary px-3 py-1 bg-primary/10 rounded-full tracking-widest">2 PENDING</span>
-          </div>
-          <div className="flex flex-col gap-6">
-            {/* Need Item 1 */}
-            <div className="flex flex-col items-stretch rounded-[40px] border border-slate-50 dark:border-white/5 bg-white dark:bg-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-all">
-              <div className="w-full h-40 bg-center bg-no-repeat bg-cover transition-transform group-hover:scale-105 duration-700" style={{ backgroundImage: 'url("https://picsum.photos/id/160/600/400")' }}></div>
-              <div className="p-8 space-y-6">
+        <h3 className="text-[#1b140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-0 pb-2 pt-2">Community Needs</h3>
+        <div className="px-0 @container flex flex-col gap-4">
+          {supportNeeds.length === 0 && (
+            <div className="text-sm text-[#9a704c]">No active needs yet.</div>
+          )}
+          {supportNeeds.map((need) => {
+            const goal = Number(need.goalAmount || 0);
+            const pledged = Number(need.pledgedTotal || need.amount || 0);
+            const pct = goal > 0 ? Math.min(100, Math.round((pledged / goal) * 100)) : 0;
+            return (
+            <div key={need.id} className="flex flex-col items-stretch justify-start rounded-xl border border-[#e7dacf] dark:border-white/10 bg-white dark:bg-white/5 overflow-hidden">
+              <div className="w-full h-3 bg-primary/20"></div>
+              <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-2 p-4">
                 <div className="flex justify-between items-start">
-                  <h4 className="text-xl font-black leading-tight italic">Member Physio Support</h4>
-                  <span className="bg-red-50 dark:bg-red-900/20 text-red-500 text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm">Urgent</span>
+                  <p className="text-[#1b140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">{need.title}</p>
+                  <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                    {need.urgency === 'high' ? 'Urgent' : need.urgency === 'medium' ? 'Priority' : 'Open'}
+                  </span>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed">Supporting a member's recovery from a recent sports injury.</p>
-                
-                <div className="space-y-3">
-                  <div className="w-full bg-slate-50 dark:bg-slate-900 h-3 rounded-full overflow-hidden shadow-inner">
-                    <div className="bg-primary h-full rounded-full shadow-[0_0_8px_rgba(211,109,33,0.4)]" style={{ width: '45%' }}></div>
+                <div className="flex flex-col gap-3">
+                  <p className="text-[#9a704c] dark:text-primary/70 text-sm font-normal leading-normal">{need.description}</p>
+                  <div className="w-full bg-[#f0e8e0] dark:bg-white/10 h-2 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full" style={{ width: `${pct}%` }}></div>
                   </div>
-                  <div className="flex justify-between items-center px-1">
-                    <p className="text-sm font-black uppercase tracking-tight">$450 <span className="text-slate-400 font-bold opacity-50">of $1,000</span></p>
-                    <p className="text-primary text-sm font-black italic">45%</p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#1b140d] dark:text-white text-sm font-bold">${pledged} <span className="text-[#9a704c] font-normal">of ${goal || pledged}</span></p>
+                    <p className="text-primary text-sm font-bold">{pct || 0}%</p>
                   </div>
+                  <button
+                    onClick={() => onNavigate((`${AppView.SUPPORT_REQUEST_DETAIL}?requestId=${need.id}`) as AppView)}
+                    className="text-primary text-xs font-bold uppercase tracking-widest self-start"
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          )})}
+        </div>
 
         {/* History Snippet */}
         <section className="space-y-4">
-          <h3 className="text-base font-black uppercase tracking-widest text-slate-400 px-1">Recent Pledges</h3>
-          <div className="flex flex-col bg-white dark:bg-slate-800 rounded-[32px] border border-slate-50 dark:border-white/5 shadow-sm divide-y divide-slate-50 dark:divide-slate-700">
-            {[
-              { name: 'Sarah Chen', time: '2 hours ago', amount: '50', color: 'bg-primary/20', text: 'text-primary', initials: 'SC' },
-              { name: 'Marcus Johnson', time: 'Yesterday', amount: '120', color: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', initials: 'MJ' },
-            ].map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-5">
-                <div className="flex items-center gap-4">
-                  <div className={`size-11 rounded-2xl flex items-center justify-center font-black text-xs ${p.color} ${p.text} shadow-sm`}>{p.initials}</div>
-                  <div>
-                    <p className="font-black text-sm uppercase tracking-tight">{p.name}</p>
-                    <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">{p.time}</p>
+          <h3 className="text-[#1b140d] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-0 pb-2 pt-2">Recent Pledges</h3>
+          <div className="flex flex-col divide-y divide-[#e7dacf] dark:divide-white/10 bg-white dark:bg-white/5 rounded-xl border border-[#e7dacf] dark:border-white/10">
+            {recentPledges.length === 0 && (
+              <div className="p-4 text-sm text-[#9a704c]">No pledges yet.</div>
+            )}
+            {recentPledges.map((p) => {
+              const initials = p.name?.split(' ').map((part: string) => part[0]).slice(0, 2).join('').toUpperCase();
+              return (
+                <div key={p.id} className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="size-10 rounded-full flex items-center justify-center font-bold text-xs bg-primary/20 text-primary">{initials}</div>
+                    <div>
+                      <p className="text-[#1b140d] dark:text-white font-medium text-sm">{p.name}</p>
+                      <p className="text-[#9a704c] text-xs">{p.time}</p>
+                    </div>
                   </div>
+                  <p className="text-primary font-bold">+${p.amount}</p>
                 </div>
-                <p className="text-primary font-black italic text-lg">+${p.amount}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </main>
 
       {/* Sticky Bottom Actions */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-6 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-100 dark:border-white/5 z-50">
-        <div className="flex gap-4">
-          <button className="flex-1 flex items-center justify-center rounded-2xl h-16 px-4 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 active:scale-95 transition-all">
-            Request Aid
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] p-4 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-[#e7dacf] dark:border-white/10 z-50">
+        <div className="flex gap-3">
+          <button
+            onClick={() => onNavigate(AppView.SUPPORT_REQUEST)}
+            className="flex-1 flex items-center justify-center rounded-xl h-12 px-4 bg-[#f0e8e0] dark:bg-white/10 text-[#1b140d] dark:text-white text-base font-semibold border border-[#d8c7b8] dark:border-white/20 shadow-sm"
+          >
+            Request Support
           </button>
           <button 
             onClick={() => onNavigate(AppView.PLEDGE_MODAL)}
-            className="flex-[1.5] flex items-center justify-center rounded-2xl h-16 px-4 bg-primary text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all italic"
+            className="flex-[1.5] flex items-center justify-center rounded-xl h-12 px-4 bg-primary text-white text-base font-semibold shadow-lg shadow-primary/20 border border-primary/90"
           >
             Make a Pledge
           </button>

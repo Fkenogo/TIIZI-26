@@ -1,6 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { useFirestoreCollection } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -8,12 +10,66 @@ interface Props {
 
 const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
   const [showFilters, setShowFilters] = useState(false);
+  const [params] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(params.get('q') || '');
+  const queryTerm = params.get('q') || '';
+  const [quickType, setQuickType] = useState<'All' | 'Public' | 'Private' | 'Nearby'>('All');
+  const [appliedGroupType, setAppliedGroupType] = useState<'Public' | 'Private'>('Public');
+  const [draftGroupType, setDraftGroupType] = useState<'Public' | 'Private'>('Public');
+  const [appliedDifficulty, setAppliedDifficulty] = useState<'Beginner' | 'Medium' | 'Advanced'>('Medium');
+  const [draftDifficulty, setDraftDifficulty] = useState<'Beginner' | 'Medium' | 'Advanced'>('Medium');
+  const [appliedCategory, setAppliedCategory] = useState<'Strength' | 'Yoga' | 'HIIT' | 'Cardio'>('Yoga');
+  const [draftCategory, setDraftCategory] = useState<'Strength' | 'Yoga' | 'HIIT' | 'Cardio'>('Yoga');
+  const [appliedActiveOnly, setAppliedActiveOnly] = useState(true);
+  const [draftActiveOnly, setDraftActiveOnly] = useState(true);
 
-  const groups = [
-    { name: 'Morning HIIT Warriors', sub: '24 members • Active Streak', type: 'Nearby', color: 'bg-emerald-100 text-emerald-700', img: 'https://picsum.photos/id/111/200/200' },
-    { name: 'Stretching Daily', sub: '156 members • Competitive', type: 'Public', color: 'bg-blue-100 text-blue-700', img: 'https://picsum.photos/id/117/200/200', isPrivate: true },
-    { name: 'Weight Loss Squad', sub: '1.2k members • Streak', type: 'Popular', color: 'bg-orange-100 text-orange-700', img: 'https://picsum.photos/id/160/200/200' },
-  ];
+  useEffect(() => {
+    setSearchTerm(queryTerm);
+  }, [queryTerm]);
+
+  const { items: groups } = useFirestoreCollection<{
+    id: string;
+    name: string;
+    memberCount?: number;
+    description?: string;
+    category?: string;
+    image?: string;
+    isPrivate?: boolean;
+    difficulty?: 'Beginner' | 'Medium' | 'Advanced';
+    challengeTitle?: string;
+  }>(['groups']);
+
+  const formatMembers = (count: number) => (count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count));
+
+  const filteredGroups = useMemo(() => groups.filter((group) => {
+    const matchesSearch = `${group.name} ${group.description || ''} ${group.category || ''}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    if (!matchesSearch) return false;
+
+    if (quickType === 'Public' && group.isPrivate) return false;
+    if (quickType === 'Private' && !group.isPrivate) return false;
+    if (quickType === 'Nearby') return false;
+
+    if (group.isPrivate && appliedGroupType === 'Public') return false;
+    if (!group.isPrivate && appliedGroupType === 'Private') return false;
+    if (group.difficulty && group.difficulty !== appliedDifficulty) return false;
+    if (group.category && group.category !== appliedCategory) return false;
+    if (appliedActiveOnly && !group.challengeTitle) return false;
+    return true;
+  }), [groups, searchTerm, quickType, appliedGroupType, appliedDifficulty, appliedCategory, appliedActiveOnly]);
+
+  const resetFilters = () => {
+    setQuickType('All');
+    setAppliedGroupType('Public');
+    setDraftGroupType('Public');
+    setAppliedDifficulty('Medium');
+    setDraftDifficulty('Medium');
+    setAppliedCategory('Yoga');
+    setDraftCategory('Yoga');
+    setAppliedActiveOnly(true);
+    setDraftActiveOnly(true);
+  };
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased relative">
@@ -42,6 +98,8 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
           <div className="flex h-14 bg-primary/5 dark:bg-slate-800 rounded-[20px] items-center px-6 transition-all focus-within:ring-2 focus-within:ring-primary/20 border-2 border-transparent focus-within:border-primary/5">
             <span className="material-icons-round text-primary mr-4 font-black">search</span>
             <input 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-bold placeholder:text-slate-400" 
               placeholder="Search group name or focus..." 
             />
@@ -51,15 +109,16 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
         {/* Quick Chips */}
         <div className="flex gap-3 px-5 pb-6 overflow-x-auto no-scrollbar">
           {[
-            { label: 'Public', icon: 'public', active: true },
-            { label: 'Private', icon: 'lock', active: false },
-            { label: 'My Groups', icon: 'groups', active: false },
-            { label: 'Nearby', icon: 'location_on', active: false }
-          ].map((chip, i) => (
+            { label: 'All', icon: 'apps' },
+            { label: 'Public', icon: 'public' },
+            { label: 'Private', icon: 'lock' },
+            { label: 'Nearby', icon: 'location_on' }
+          ].map((chip) => (
             <button 
-              key={i}
+              key={chip.label}
+              onClick={() => setQuickType(chip.label as typeof quickType)}
               className={`h-11 px-6 rounded-2xl flex items-center gap-2.5 transition-all active:scale-95 shrink-0 font-black text-[10px] uppercase tracking-widest border-2 ${
-                chip.active 
+                quickType === chip.label
                 ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
                 : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-800 text-slate-400'
               }`}
@@ -73,22 +132,31 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
         {/* Results */}
         <div className="px-5 space-y-4">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2 mb-2">Recommended for you</h3>
-          {groups.map((group, i) => (
+          {filteredGroups.map((group, i) => (
             <div 
-              key={i} 
+              key={group.id} 
               onClick={() => onNavigate(group.isPrivate ? AppView.REQUEST_TO_JOIN_PRIVATE : AppView.GROUP_INVITE_LANDING)}
               className="bg-white dark:bg-slate-800 p-5 rounded-[40px] shadow-sm border border-slate-50 dark:border-slate-800 flex gap-6 items-center active:scale-[0.98] transition-all cursor-pointer group"
             >
               <div className="flex-1 space-y-2">
-                <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] shadow-sm ${group.color}`}>
-                  {group.type}
+                <span className="px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] shadow-sm bg-slate-100 text-slate-600">
+                  {group.isPrivate ? 'Private' : 'Public'}
                 </span>
                 <h3 className="text-lg font-black leading-tight group-hover:text-primary transition-colors">{group.name}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{group.sub}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{formatMembers(group.memberCount || 0)} members • {group.category || 'General'}</p>
               </div>
-              <img className="size-24 rounded-[32px] object-cover shadow-inner grayscale group-hover:grayscale-0 transition-all duration-700" src={group.img} alt="Group" />
+              {group.image ? (
+                <img className="size-24 rounded-[32px] object-cover shadow-inner grayscale group-hover:grayscale-0 transition-all duration-700" src={group.image} alt="Group" />
+              ) : (
+                <div className="size-24 rounded-[32px] bg-slate-100 dark:bg-slate-700"></div>
+              )}
             </div>
           ))}
+          {filteredGroups.length === 0 && (
+            <div className="py-8 text-center text-slate-400 text-sm font-bold">
+              No groups match your current filters.
+            </div>
+          )}
         </div>
       </main>
 
@@ -101,7 +169,7 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
             
             <div className="flex items-center justify-between mb-10 px-2">
               <h3 className="text-2xl font-black tracking-tight">Filters</h3>
-              <button className="text-primary text-[10px] font-black uppercase tracking-widest px-4 py-2 hover:bg-primary/5 rounded-full transition-all">Clear All</button>
+              <button onClick={resetFilters} className="text-primary text-[10px] font-black uppercase tracking-widest px-4 py-2 hover:bg-primary/5 rounded-full transition-all">Clear All</button>
             </div>
 
             <div className="space-y-10 overflow-y-auto max-h-[60vh] hide-scrollbar pb-10">
@@ -109,8 +177,8 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">Group Type</p>
                 <div className="flex h-14 w-full items-center justify-center rounded-[20px] bg-slate-100 dark:bg-slate-800 p-1.5 shadow-inner">
-                  <button className="flex-1 h-full rounded-[15px] bg-white dark:bg-slate-700 shadow-sm text-[10px] font-black uppercase tracking-widest text-primary">Public</button>
-                  <button className="flex-1 h-full text-[10px] font-black uppercase tracking-widest text-slate-400">Private</button>
+                  <button onClick={() => setDraftGroupType('Public')} className={`flex-1 h-full rounded-[15px] text-[10px] font-black uppercase tracking-widest ${draftGroupType === 'Public' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`}>Public</button>
+                  <button onClick={() => setDraftGroupType('Private')} className={`flex-1 h-full rounded-[15px] text-[10px] font-black uppercase tracking-widest ${draftGroupType === 'Private' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`}>Private</button>
                 </div>
               </div>
 
@@ -118,8 +186,8 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">Experience Level</p>
                 <div className="flex h-14 w-full items-center justify-center rounded-[20px] bg-slate-100 dark:bg-slate-800 p-1.5 shadow-inner">
-                  {['Beginner', 'Medium', 'Advanced'].map((lvl) => (
-                    <button key={lvl} className={`flex-1 h-full rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all ${lvl === 'Medium' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`}>
+                  {(['Beginner', 'Medium', 'Advanced'] as const).map((lvl) => (
+                    <button key={lvl} onClick={() => setDraftDifficulty(lvl)} className={`flex-1 h-full rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all ${draftDifficulty === lvl ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`}>
                       {lvl}
                     </button>
                   ))}
@@ -135,8 +203,8 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
                     { icon: 'self_improvement', label: 'Yoga', active: true },
                     { icon: 'bolt', label: 'HIIT' },
                     { icon: 'directions_run', label: 'Cardio' }
-                  ].map(cat => (
-                    <button key={cat.label} className={`flex items-center gap-4 rounded-[20px] border-2 p-4 transition-all ${cat.active ? 'border-primary bg-primary/5 text-primary' : 'border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-500'}`}>
+                  ].map((cat) => (
+                    <button key={cat.label} onClick={() => setDraftCategory(cat.label as typeof draftCategory)} className={`flex items-center gap-4 rounded-[20px] border-2 p-4 transition-all ${draftCategory === cat.label ? 'border-primary bg-primary/5 text-primary' : 'border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-500'}`}>
                       <span className="material-icons-round text-xl">{cat.icon}</span>
                       <span className="text-[10px] font-black uppercase tracking-widest">{cat.label}</span>
                     </button>
@@ -151,14 +219,20 @@ const FindGroupsScreen: React.FC<Props> = ({ onNavigate }) => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Show groups with current competitions</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input defaultChecked className="sr-only peer" type="checkbox" />
+                  <input checked={draftActiveOnly} onChange={(e) => setDraftActiveOnly(e.target.checked)} className="sr-only peer" type="checkbox" />
                   <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                 </label>
               </div>
             </div>
 
             <button 
-              onClick={() => setShowFilters(false)}
+              onClick={() => {
+                setAppliedGroupType(draftGroupType);
+                setAppliedDifficulty(draftDifficulty);
+                setAppliedCategory(draftCategory);
+                setAppliedActiveOnly(draftActiveOnly);
+                setShowFilters(false);
+              }}
               className="w-full bg-primary hover:bg-orange-600 text-white font-black py-6 rounded-[28px] shadow-2xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm mt-4"
             >
               Apply Filters

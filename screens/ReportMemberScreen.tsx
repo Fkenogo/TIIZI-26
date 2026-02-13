@@ -1,21 +1,44 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppView } from '../types';
+import { useSearchParams } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useFirestoreCollection } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const ReportMemberScreen: React.FC<Props> = ({ onNavigate }) => {
-  const [selectedReason, setSelectedReason] = useState('Harassment');
+  const [params] = useSearchParams();
+  const memberId = params.get('memberId');
+  const memberNameParam = params.get('memberName') || '';
+  const [memberName, setMemberName] = useState(memberNameParam);
+  const [memberAvatar, setMemberAvatar] = useState('/icons/icon-192.svg');
+  const [memberSince, setMemberSince] = useState('');
+  const [selectedReason, setSelectedReason] = useState('');
+  const { items: reasons } = useFirestoreCollection<{ id: string; label?: string }>(['reportReasons']);
 
-  const reasons = [
-    "Harassment",
-    "Spam",
-    "Inappropriate Content",
-    "Off-topic",
-    "Other"
-  ];
+  useEffect(() => {
+    if (!selectedReason && reasons.length > 0) {
+      setSelectedReason(reasons[0].label || reasons[0].id);
+    }
+  }, [selectedReason, reasons]);
+
+  useEffect(() => {
+    const loadMember = async () => {
+      if (!memberId) return;
+      const snap = await getDoc(doc(db, 'users', memberId));
+      if (!snap.exists()) return;
+      const data = snap.data() as any;
+      setMemberName(data.name || memberNameParam || 'Member');
+      setMemberAvatar(data.avatar || '/icons/icon-192.svg');
+      const createdAt = data.createdAt?.toDate?.() as Date | undefined;
+      setMemberSince(createdAt ? createdAt.toLocaleDateString() : '');
+    };
+    loadMember().catch(() => undefined);
+  }, [memberId, memberNameParam]);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col">
@@ -33,10 +56,10 @@ const ReportMemberScreen: React.FC<Props> = ({ onNavigate }) => {
       <main className="flex-1 overflow-y-auto px-6 pt-8 pb-32">
         {/* User Summary */}
         <div className="flex items-center gap-5 mb-10">
-          <img className="size-16 rounded-[24px] object-cover ring-4 ring-primary/5" src="https://picsum.photos/id/64/100/100" alt="Sarah Miller" />
+          <img className="size-16 rounded-[24px] object-cover ring-4 ring-primary/5" src={memberAvatar} alt={memberName} />
           <div>
-            <h1 className="text-2xl font-black tracking-tight">Sarah Miller</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Member since 2023 • HIIT Group</p>
+            <h1 className="text-2xl font-black tracking-tight">{memberName || 'Member'}</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Member since {memberSince || '—'}</p>
           </div>
         </div>
 
@@ -44,30 +67,35 @@ const ReportMemberScreen: React.FC<Props> = ({ onNavigate }) => {
         <section className="space-y-6">
           <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 px-1">Reason for Reporting</h3>
           <div className="flex flex-col gap-3">
-            {reasons.map((reason) => (
+            {reasons.length === 0 && (
+              <div className="text-sm text-slate-400 px-2">No report reasons configured.</div>
+            )}
+            {reasons.map((reason) => {
+              const label = reason.label || reason.id;
+              return (
               <label 
-                key={reason}
+                key={reason.id}
                 className={`flex items-center justify-between p-5 rounded-3xl border-2 transition-all cursor-pointer active:scale-98 ${
-                  selectedReason === reason 
+                  selectedReason === label 
                   ? 'border-primary bg-primary/5 shadow-sm' 
                   : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50'
                 }`}
               >
-                <span className="font-bold text-sm">{reason}</span>
+                <span className="font-bold text-sm">{label}</span>
                 <div className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                  selectedReason === reason ? 'border-primary' : 'border-slate-200 dark:border-slate-700'
+                  selectedReason === label ? 'border-primary' : 'border-slate-200 dark:border-slate-700'
                 }`}>
-                  {selectedReason === reason && <div className="size-3 bg-primary rounded-full"></div>}
+                  {selectedReason === label && <div className="size-3 bg-primary rounded-full"></div>}
                 </div>
                 <input 
                   type="radio" 
                   className="hidden" 
                   name="reason" 
-                  checked={selectedReason === reason} 
-                  onChange={() => setSelectedReason(reason)}
+                  checked={selectedReason === label} 
+                  onChange={() => setSelectedReason(label)}
                 />
               </label>
-            ))}
+            )})}
           </div>
         </section>
 

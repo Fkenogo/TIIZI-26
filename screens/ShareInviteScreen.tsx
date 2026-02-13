@@ -1,12 +1,35 @@
 
 import React from 'react';
 import { AppView } from '../types';
+import { useTiizi } from '../context/AppContext';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
+  const { addToast, state } = useTiizi();
+  const activeGroup = state.groups.find((g) => g.id === state.activeGroupId);
+  const inviteCode = activeGroup?.inviteCode || activeGroup?.id || '';
+  const inviteLink = inviteCode ? `${window.location.origin}/group_invite_landing?code=${encodeURIComponent(inviteCode)}` : '';
+
+  const shareInvite = async (channel: 'whatsapp' | 'telegram' | 'sms' | 'email') => {
+    const text = `Join my Tiizi group: ${inviteLink}`;
+    if (channel === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (channel === 'telegram') {
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent('Join my Tiizi group')}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (channel === 'sms') {
+      window.location.href = `sms:?body=${encodeURIComponent(text)}`;
+      return;
+    }
+    window.location.href = `mailto:?subject=${encodeURIComponent('Join my Tiizi group')}&body=${encodeURIComponent(text)}`;
+  };
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col antialiased">
       <header className="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-5 pt-12 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
@@ -25,10 +48,14 @@ const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
           <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] shadow-sm border border-slate-50 dark:border-slate-800 flex gap-6 items-center">
             <div className="flex-1 space-y-1">
               <p className="text-primary text-[10px] font-black uppercase tracking-[0.2em]">Group Details</p>
-              <h3 className="text-xl font-black">Morning Warriors</h3>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">128 Members</p>
+              <h3 className="text-xl font-black">{activeGroup?.name || 'Group'}</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activeGroup?.memberCount ?? 0} Members</p>
             </div>
-            <img className="size-20 rounded-[28px] object-cover grayscale shadow-inner" src="https://picsum.photos/id/117/200/200" alt="Group" />
+            <div className="size-20 rounded-[28px] bg-slate-200 dark:bg-slate-700 overflow-hidden shadow-inner">
+              {activeGroup?.image && (
+                <img className="size-20 rounded-[28px] object-cover grayscale" src={activeGroup.image} alt="Group" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -38,10 +65,13 @@ const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
           <div className="flex bg-white dark:bg-slate-800 rounded-[24px] border-2 border-primary/10 overflow-hidden h-16 shadow-sm">
             <input 
               readOnly 
-              value="tiizi.app/join/morning-warriors" 
+              value={inviteLink}
               className="flex-1 bg-transparent border-none focus:ring-0 px-6 text-sm font-bold text-slate-700 dark:text-white"
             />
-            <button className="bg-primary text-white px-6 hover:bg-orange-600 transition-colors active:scale-95">
+            <button
+              onClick={() => inviteLink && navigator.clipboard.writeText(inviteLink).then(() => addToast('Invite link copied.', 'success')).catch(() => addToast('Unable to copy invite link.', 'error'))}
+              className="bg-primary text-white px-6 hover:bg-orange-600 transition-colors active:scale-95"
+            >
               <span className="material-icons-round">content_copy</span>
             </button>
           </div>
@@ -52,17 +82,17 @@ const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Share via</h3>
           <div className="grid grid-cols-4 gap-4">
             {[
-              { label: 'WhatsApp', icon: 'chat', color: 'bg-emerald-50 text-emerald-500' },
-              { label: 'Telegram', icon: 'send', color: 'bg-blue-50 text-blue-500' },
-              { label: 'SMS', icon: 'sms', color: 'bg-slate-50 text-slate-500' },
-              { label: 'Email', icon: 'mail', color: 'bg-slate-50 text-slate-500' }
+              { label: 'WhatsApp', icon: 'chat', color: 'bg-emerald-50 text-emerald-500', channel: 'whatsapp' as const },
+              { label: 'Telegram', icon: 'send', color: 'bg-blue-50 text-blue-500', channel: 'telegram' as const },
+              { label: 'SMS', icon: 'sms', color: 'bg-slate-50 text-slate-500', channel: 'sms' as const },
+              { label: 'Email', icon: 'mail', color: 'bg-slate-50 text-slate-500', channel: 'email' as const }
             ].map((platform, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <button key={i} onClick={() => shareInvite(platform.channel)} className="flex flex-col items-center gap-2 cursor-pointer group">
                 <div className={`size-14 rounded-[20px] flex items-center justify-center transition-all group-active:scale-90 ${platform.color} shadow-sm group-hover:shadow-md`}>
                   <span className="material-icons-round text-2xl">{platform.icon}</span>
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{platform.label}</p>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -76,10 +106,11 @@ const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
           
           <div className="bg-white p-8 rounded-[48px] shadow-2xl border-8 border-primary/5 relative">
             <div className="size-48 bg-white flex items-center justify-center">
-              {/* Mock QR */}
               <div className="size-full border-2 border-slate-100 rounded-2xl flex items-center justify-center p-2">
                 <div className="size-full bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=tiizi-invite" alt="QR" className="w-full h-full grayscale opacity-80" />
+                  {inviteLink && (
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(inviteLink)}`} alt="QR" className="w-full h-full grayscale opacity-80" />
+                  )}
                 </div>
               </div>
             </div>
@@ -91,7 +122,10 @@ const ShareInviteScreen: React.FC<Props> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <button className="text-primary font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 px-6 py-3 bg-primary/5 rounded-full hover:bg-primary/10 transition-all">
+          <button
+            onClick={() => inviteLink && navigator.clipboard.writeText(inviteLink).then(() => addToast('QR invite copied as link.', 'success')).catch(() => addToast('Unable to copy invite link.', 'error'))}
+            className="text-primary font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 px-6 py-3 bg-primary/5 rounded-full hover:bg-primary/10 transition-all"
+          >
             <span className="material-icons-round text-sm">download</span>
             Save QR Code
           </button>

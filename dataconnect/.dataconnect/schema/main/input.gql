@@ -1,0 +1,1557 @@
+"""
+✨ `Comment_KeyOutput` returns the primary key fields of table type `Comment`.
+
+It has the same format as `Comment_Key`, but is only used as mutation return value.
+"""
+scalar Comment_KeyOutput
+"""
+✨ `Group_KeyOutput` returns the primary key fields of table type `Group`.
+
+It has the same format as `Group_Key`, but is only used as mutation return value.
+"""
+scalar Group_KeyOutput
+"""
+✨ `Membership_KeyOutput` returns the primary key fields of table type `Membership`.
+
+It has the same format as `Membership_Key`, but is only used as mutation return value.
+"""
+scalar Membership_KeyOutput
+"""
+✨ `User_KeyOutput` returns the primary key fields of table type `User`.
+
+It has the same format as `User_Key`, but is only used as mutation return value.
+"""
+scalar User_KeyOutput
+"""
+✨ `Workout_KeyOutput` returns the primary key fields of table type `Workout`.
+
+It has the same format as `Workout_Key`, but is only used as mutation return value.
+"""
+scalar Workout_KeyOutput
+"""
+✨ Generated data input type for table 'Comment'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Comment_Data {
+  """
+  ✨ Generated from Field `Comment`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Comment`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Comment`.`userId` of type `UUID!`
+  """
+  userId: UUID
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Comment`.`userId` of type `UUID!`)
+  """
+  userId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Comment`.`workoutId` of type `UUID!`
+  """
+  workoutId: UUID
+  """
+  ✨ `_expr` server value variant of `workoutId` (✨ Generated from Field `Comment`.`workoutId` of type `UUID!`)
+  """
+  workoutId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Comment`.`user` of type `User!`
+  """
+  user: User_Key
+  """
+  ✨ Generated from Field `Comment`.`workout` of type `Workout!`
+  """
+  workout: Workout_Key
+  """
+  ✨ Generated from Field `Comment`.`content` of type `String!`
+  """
+  content: String
+  """
+  ✨ `_expr` server value variant of `content` (✨ Generated from Field `Comment`.`content` of type `String!`)
+  """
+  content_expr: String_Expr
+  """
+  ✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!]
+}
+"""
+✨ Generated filter input type for table 'Comment'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Comment_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Comment_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Comment_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Comment_Filter!]
+  """
+  ✨ Generated from Field `Comment`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Comment`.`userId` of type `UUID!`
+  """
+  userId: UUID_Filter
+  """
+  ✨ Generated from Field `Comment`.`workoutId` of type `UUID!`
+  """
+  workoutId: UUID_Filter
+  """
+  ✨ Generated from Field `Comment`.`user` of type `User!`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `Comment`.`workout` of type `Workout!`
+  """
+  workout: Workout_Filter
+  """
+  ✨ Generated from Field `Comment`.`content` of type `String!`
+  """
+  content: String_Filter
+  """
+  ✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+}
+"""
+✨ Generated first-row input type for table 'Comment'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Comment_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Comment_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Comment_Filter
+}
+"""
+✨ Generated having input type for table 'Comment'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Comment_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Comment_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Comment_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Comment_Having!]
+  """
+  ✨ Generated from Field `Comment`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`content_count` of type `Int!`
+  """
+  content_count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`workoutId_count` of type `Int!`
+  """
+  workoutId_count: Int_Filter
+  """
+  ✨ Generated from Field `Comment`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Comment`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Comment'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Comment_Key {
+  """
+  ✨ Generated from Field `Comment`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Comment`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Comment'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Comment_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Comment_Filter
+}
+"""
+✨ Generated order input type for table 'Comment'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Comment_Order {
+  """
+  ✨ Generated from Field `Comment`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`userId` of type `UUID!`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`workoutId` of type `UUID!`
+  """
+  workoutId: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`user` of type `User!`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `Comment`.`workout` of type `Workout!`
+  """
+  workout: Workout_Order
+  """
+  ✨ Generated from Field `Comment`.`content` of type `String!`
+  """
+  content: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`content_count` of type `Int!`
+  """
+  content_count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`workoutId_count` of type `Int!`
+  """
+  workoutId_count: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Comment`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Group'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Group_Data {
+  """
+  ✨ Generated from Field `Group`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Group`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Group`.`ownerId` of type `UUID!`
+  """
+  ownerId: UUID
+  """
+  ✨ `_expr` server value variant of `ownerId` (✨ Generated from Field `Group`.`ownerId` of type `UUID!`)
+  """
+  ownerId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Group`.`owner` of type `User!`
+  """
+  owner: User_Key
+  """
+  ✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!]
+  """
+  ✨ Generated from Field `Group`.`description` of type `String`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Group`.`description` of type `String`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `Group`.`groupGoal` of type `String`
+  """
+  groupGoal: String
+  """
+  ✨ `_expr` server value variant of `groupGoal` (✨ Generated from Field `Group`.`groupGoal` of type `String`)
+  """
+  groupGoal_expr: String_Expr
+  """
+  ✨ Generated from Field `Group`.`name` of type `String!`
+  """
+  name: String
+  """
+  ✨ `_expr` server value variant of `name` (✨ Generated from Field `Group`.`name` of type `String!`)
+  """
+  name_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Group'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Group_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Group_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Group_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Group_Filter!]
+  """
+  ✨ Generated from Field `Group`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Group`.`ownerId` of type `UUID!`
+  """
+  ownerId: UUID_Filter
+  """
+  ✨ Generated from Field `Group`.`owner` of type `User!`
+  """
+  owner: User_Filter
+  """
+  ✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `Group`.`description` of type `String`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `Group`.`groupGoal` of type `String`
+  """
+  groupGoal: String_Filter
+  """
+  ✨ Generated from Field `Group`.`name` of type `String!`
+  """
+  name: String_Filter
+  """
+  ✨ Generated from Field `Group`.`memberships_on_group` of type `[Membership!]!`
+  """
+  memberships_on_group: Membership_ListFilter
+  """
+  ✨ Generated from Field `Group`.`workouts_on_group` of type `[Workout!]!`
+  """
+  workouts_on_group: Workout_ListFilter
+  """
+  ✨ Generated from Field `Group`.`users_via_Membership` of type `[User!]!`
+  """
+  users_via_Membership: User_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Group'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Group_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Group_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Group_Filter
+}
+"""
+✨ Generated having input type for table 'Group'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Group_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Group_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Group_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Group_Having!]
+  """
+  ✨ Generated from Field `Group`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`description_count` of type `Int!`
+  """
+  description_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`groupGoal_count` of type `Int!`
+  """
+  groupGoal_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`name_count` of type `Int!`
+  """
+  name_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`ownerId_count` of type `Int!`
+  """
+  ownerId_count: Int_Filter
+  """
+  ✨ Generated from Field `Group`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Group`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Group'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Group_Key {
+  """
+  ✨ Generated from Field `Group`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Group`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Group'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Group_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Group_Filter
+}
+"""
+✨ Generated order input type for table 'Group'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Group_Order {
+  """
+  ✨ Generated from Field `Group`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`ownerId` of type `UUID!`
+  """
+  ownerId: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`owner` of type `User!`
+  """
+  owner: User_Order
+  """
+  ✨ Generated from Field `Group`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`description` of type `String`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`groupGoal` of type `String`
+  """
+  groupGoal: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`name` of type `String!`
+  """
+  name: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`description_count` of type `Int!`
+  """
+  description_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`groupGoal_count` of type `Int!`
+  """
+  groupGoal_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`name_count` of type `Int!`
+  """
+  name_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`ownerId_count` of type `Int!`
+  """
+  ownerId_count: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Group`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Membership'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Membership_Data {
+  """
+  ✨ Generated from Field `Membership`.`userId` of type `UUID!`
+  """
+  userId: UUID
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Membership`.`userId` of type `UUID!`)
+  """
+  userId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Membership`.`groupId` of type `UUID!`
+  """
+  groupId: UUID
+  """
+  ✨ `_expr` server value variant of `groupId` (✨ Generated from Field `Membership`.`groupId` of type `UUID!`)
+  """
+  groupId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Membership`.`group` of type `Group!`
+  """
+  group: Group_Key
+  """
+  ✨ Generated from Field `Membership`.`user` of type `User!`
+  """
+  user: User_Key
+  """
+  ✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`
+  """
+  joinedAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `joinedAt` (✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`)
+  """
+  joinedAt_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `joinedAt` (✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`)
+  """
+  joinedAt_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `joinedAt` (✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`)
+  """
+  joinedAt_update: [Timestamp_Update!]
+}
+"""
+✨ Generated filter input type for table 'Membership'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Membership_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Membership_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Membership_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Membership_Filter!]
+  """
+  ✨ Generated from Field `Membership`.`userId` of type `UUID!`
+  """
+  userId: UUID_Filter
+  """
+  ✨ Generated from Field `Membership`.`groupId` of type `UUID!`
+  """
+  groupId: UUID_Filter
+  """
+  ✨ Generated from Field `Membership`.`group` of type `Group!`
+  """
+  group: Group_Filter
+  """
+  ✨ Generated from Field `Membership`.`user` of type `User!`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`
+  """
+  joinedAt: Timestamp_Filter
+}
+"""
+✨ Generated first-row input type for table 'Membership'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Membership_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Membership_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Membership_Filter
+}
+"""
+✨ Generated having input type for table 'Membership'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Membership_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Membership_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Membership_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Membership_Having!]
+  """
+  ✨ Generated from Field `Membership`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Membership`.`groupId_count` of type `Int!`
+  """
+  groupId_count: Int_Filter
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_count` of type `Int!`
+  """
+  joinedAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Membership`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_min` of type `Timestamp`
+  """
+  joinedAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_max` of type `Timestamp`
+  """
+  joinedAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Membership'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Membership_Key {
+  """
+  ✨ Generated from Field `Membership`.`userId` of type `UUID!`
+  """
+  userId: UUID
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Membership`.`userId` of type `UUID!`)
+  """
+  userId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Membership`.`groupId` of type `UUID!`
+  """
+  groupId: UUID
+  """
+  ✨ `_expr` server value variant of `groupId` (✨ Generated from Field `Membership`.`groupId` of type `UUID!`)
+  """
+  groupId_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Membership'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Membership_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Membership_Filter
+}
+"""
+✨ Generated order input type for table 'Membership'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Membership_Order {
+  """
+  ✨ Generated from Field `Membership`.`userId` of type `UUID!`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`groupId` of type `UUID!`
+  """
+  groupId: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`group` of type `Group!`
+  """
+  group: Group_Order
+  """
+  ✨ Generated from Field `Membership`.`user` of type `User!`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `Membership`.`joinedAt` of type `Timestamp!`
+  """
+  joinedAt: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`groupId_count` of type `Int!`
+  """
+  groupId_count: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_count` of type `Int!`
+  """
+  joinedAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_min` of type `Timestamp`
+  """
+  joinedAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Membership`.`joinedAt_max` of type `Timestamp`
+  """
+  joinedAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'User'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input User_Data {
+  """
+  ✨ Generated from Field `User`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `User`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `User`.`bio` of type `String`
+  """
+  bio: String
+  """
+  ✨ `_expr` server value variant of `bio` (✨ Generated from Field `User`.`bio` of type `String`)
+  """
+  bio_expr: String_Expr
+  """
+  ✨ Generated from Field `User`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `User`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `User`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `User`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!]
+  """
+  ✨ Generated from Field `User`.`displayName` of type `String!`
+  """
+  displayName: String
+  """
+  ✨ `_expr` server value variant of `displayName` (✨ Generated from Field `User`.`displayName` of type `String!`)
+  """
+  displayName_expr: String_Expr
+  """
+  ✨ Generated from Field `User`.`email` of type `String!`
+  """
+  email: String
+  """
+  ✨ `_expr` server value variant of `email` (✨ Generated from Field `User`.`email` of type `String!`)
+  """
+  email_expr: String_Expr
+  """
+  ✨ Generated from Field `User`.`photoUrl` of type `String`
+  """
+  photoUrl: String
+  """
+  ✨ `_expr` server value variant of `photoUrl` (✨ Generated from Field `User`.`photoUrl` of type `String`)
+  """
+  photoUrl_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'User'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input User_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [User_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: User_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [User_Filter!]
+  """
+  ✨ Generated from Field `User`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `User`.`bio` of type `String`
+  """
+  bio: String_Filter
+  """
+  ✨ Generated from Field `User`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `User`.`displayName` of type `String!`
+  """
+  displayName: String_Filter
+  """
+  ✨ Generated from Field `User`.`email` of type `String!`
+  """
+  email: String_Filter
+  """
+  ✨ Generated from Field `User`.`photoUrl` of type `String`
+  """
+  photoUrl: String_Filter
+  """
+  ✨ Generated from Field `User`.`comments_on_user` of type `[Comment!]!`
+  """
+  comments_on_user: Comment_ListFilter
+  """
+  ✨ Generated from Field `User`.`groups_on_owner` of type `[Group!]!`
+  """
+  groups_on_owner: Group_ListFilter
+  """
+  ✨ Generated from Field `User`.`memberships_on_user` of type `[Membership!]!`
+  """
+  memberships_on_user: Membership_ListFilter
+  """
+  ✨ Generated from Field `User`.`workouts_on_user` of type `[Workout!]!`
+  """
+  workouts_on_user: Workout_ListFilter
+  """
+  ✨ Generated from Field `User`.`groups_via_Membership` of type `[Group!]!`
+  """
+  groups_via_Membership: Group_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'User'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input User_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [User_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: User_Filter
+}
+"""
+✨ Generated having input type for table 'User'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input User_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [User_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: User_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [User_Having!]
+  """
+  ✨ Generated from Field `User`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`bio_count` of type `Int!`
+  """
+  bio_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`displayName_count` of type `Int!`
+  """
+  displayName_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`email_count` of type `Int!`
+  """
+  email_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`photoUrl_count` of type `Int!`
+  """
+  photoUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `User`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'User'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input User_Key {
+  """
+  ✨ Generated from Field `User`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `User`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'User'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input User_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: User_Filter
+}
+"""
+✨ Generated order input type for table 'User'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input User_Order {
+  """
+  ✨ Generated from Field `User`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `User`.`bio` of type `String`
+  """
+  bio: OrderDirection
+  """
+  ✨ Generated from Field `User`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `User`.`displayName` of type `String!`
+  """
+  displayName: OrderDirection
+  """
+  ✨ Generated from Field `User`.`email` of type `String!`
+  """
+  email: OrderDirection
+  """
+  ✨ Generated from Field `User`.`photoUrl` of type `String`
+  """
+  photoUrl: OrderDirection
+  """
+  ✨ Generated from Field `User`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`bio_count` of type `Int!`
+  """
+  bio_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`displayName_count` of type `Int!`
+  """
+  displayName_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`email_count` of type `Int!`
+  """
+  email_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`photoUrl_count` of type `Int!`
+  """
+  photoUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `User`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Workout'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Workout_Data {
+  """
+  ✨ Generated from Field `Workout`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Workout`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Workout`.`groupId` of type `UUID`
+  """
+  groupId: UUID
+  """
+  ✨ `_expr` server value variant of `groupId` (✨ Generated from Field `Workout`.`groupId` of type `UUID`)
+  """
+  groupId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Workout`.`userId` of type `UUID!`
+  """
+  userId: UUID
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Workout`.`userId` of type `UUID!`)
+  """
+  userId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Workout`.`group` of type `Group`
+  """
+  group: Group_Key
+  """
+  ✨ Generated from Field `Workout`.`user` of type `User!`
+  """
+  user: User_Key
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned` of type `Int`
+  """
+  caloriesBurned: Int
+  """
+  ✨ `_expr` server value variant of `caloriesBurned` (✨ Generated from Field `Workout`.`caloriesBurned` of type `Int`)
+  """
+  caloriesBurned_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `caloriesBurned` (✨ Generated from Field `Workout`.`caloriesBurned` of type `Int`)
+  """
+  caloriesBurned_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles` of type `Float`
+  """
+  distanceMiles: Float
+  """
+  ✨ `_expr` server value variant of `distanceMiles` (✨ Generated from Field `Workout`.`distanceMiles` of type `Float`)
+  """
+  distanceMiles_expr: Float_Expr
+  """
+  ✨ `_update` server value variant of `distanceMiles` (✨ Generated from Field `Workout`.`distanceMiles` of type `Float`)
+  """
+  distanceMiles_update: [Float_Update!]
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes` of type `Int!`
+  """
+  durationMinutes: Int
+  """
+  ✨ `_expr` server value variant of `durationMinutes` (✨ Generated from Field `Workout`.`durationMinutes` of type `Int!`)
+  """
+  durationMinutes_expr: Int_Expr
+  """
+  ✨ `_update` server value variant of `durationMinutes` (✨ Generated from Field `Workout`.`durationMinutes` of type `Int!`)
+  """
+  durationMinutes_update: [Int_Update!]
+  """
+  ✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`
+  """
+  loggedAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `loggedAt` (✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`)
+  """
+  loggedAt_expr: Timestamp_Expr
+  """
+  ✨ `_time` server value variant of `loggedAt` (✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`)
+  """
+  loggedAt_time: Timestamp_Relative
+  """
+  ✨ `_update` server value variant of `loggedAt` (✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`)
+  """
+  loggedAt_update: [Timestamp_Update!]
+  """
+  ✨ Generated from Field `Workout`.`notes` of type `String`
+  """
+  notes: String
+  """
+  ✨ `_expr` server value variant of `notes` (✨ Generated from Field `Workout`.`notes` of type `String`)
+  """
+  notes_expr: String_Expr
+  """
+  ✨ Generated from Field `Workout`.`workoutType` of type `String!`
+  """
+  workoutType: String
+  """
+  ✨ `_expr` server value variant of `workoutType` (✨ Generated from Field `Workout`.`workoutType` of type `String!`)
+  """
+  workoutType_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Workout'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Workout_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Workout_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Workout_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Workout_Filter!]
+  """
+  ✨ Generated from Field `Workout`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Workout`.`groupId` of type `UUID`
+  """
+  groupId: UUID_Filter
+  """
+  ✨ Generated from Field `Workout`.`userId` of type `UUID!`
+  """
+  userId: UUID_Filter
+  """
+  ✨ Generated from Field `Workout`.`group` of type `Group`
+  """
+  group: Group_Filter
+  """
+  ✨ Generated from Field `Workout`.`user` of type `User!`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned` of type `Int`
+  """
+  caloriesBurned: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles` of type `Float`
+  """
+  distanceMiles: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes` of type `Int!`
+  """
+  durationMinutes: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`
+  """
+  loggedAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `Workout`.`notes` of type `String`
+  """
+  notes: String_Filter
+  """
+  ✨ Generated from Field `Workout`.`workoutType` of type `String!`
+  """
+  workoutType: String_Filter
+  """
+  ✨ Generated from Field `Workout`.`comments_on_workout` of type `[Comment!]!`
+  """
+  comments_on_workout: Comment_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Workout'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Workout_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Workout_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Workout_Filter
+}
+"""
+✨ Generated having input type for table 'Workout'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Workout_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Workout_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Workout_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Workout_Having!]
+  """
+  ✨ Generated from Field `Workout`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_count` of type `Int!`
+  """
+  caloriesBurned_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_count` of type `Int!`
+  """
+  distanceMiles_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_count` of type `Int!`
+  """
+  durationMinutes_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`groupId_count` of type `Int!`
+  """
+  groupId_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_count` of type `Int!`
+  """
+  loggedAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`notes_count` of type `Int!`
+  """
+  notes_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`workoutType_count` of type `Int!`
+  """
+  workoutType_count: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_sum` of type `Int`
+  """
+  caloriesBurned_sum: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_sum` of type `Float`
+  """
+  distanceMiles_sum: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_sum` of type `Int`
+  """
+  durationMinutes_sum: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_avg` of type `Float`
+  """
+  caloriesBurned_avg: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_avg` of type `Float`
+  """
+  distanceMiles_avg: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_avg` of type `Float`
+  """
+  durationMinutes_avg: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_min` of type `Int`
+  """
+  caloriesBurned_min: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_min` of type `Float`
+  """
+  distanceMiles_min: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_min` of type `Int`
+  """
+  durationMinutes_min: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_min` of type `Timestamp`
+  """
+  loggedAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_max` of type `Int`
+  """
+  caloriesBurned_max: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_max` of type `Float`
+  """
+  distanceMiles_max: Float_Filter
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_max` of type `Int`
+  """
+  durationMinutes_max: Int_Filter
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_max` of type `Timestamp`
+  """
+  loggedAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Workout'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Workout_Key {
+  """
+  ✨ Generated from Field `Workout`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Workout`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Workout'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Workout_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Workout_Filter
+}
+"""
+✨ Generated order input type for table 'Workout'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Workout_Order {
+  """
+  ✨ Generated from Field `Workout`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`groupId` of type `UUID`
+  """
+  groupId: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`userId` of type `UUID!`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`group` of type `Group`
+  """
+  group: Group_Order
+  """
+  ✨ Generated from Field `Workout`.`user` of type `User!`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned` of type `Int`
+  """
+  caloriesBurned: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles` of type `Float`
+  """
+  distanceMiles: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes` of type `Int!`
+  """
+  durationMinutes: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`loggedAt` of type `Timestamp!`
+  """
+  loggedAt: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`notes` of type `String`
+  """
+  notes: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`workoutType` of type `String!`
+  """
+  workoutType: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_count` of type `Int!`
+  """
+  caloriesBurned_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_count` of type `Int!`
+  """
+  distanceMiles_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_count` of type `Int!`
+  """
+  durationMinutes_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`groupId_count` of type `Int!`
+  """
+  groupId_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_count` of type `Int!`
+  """
+  loggedAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`notes_count` of type `Int!`
+  """
+  notes_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`workoutType_count` of type `Int!`
+  """
+  workoutType_count: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_sum` of type `Int`
+  """
+  caloriesBurned_sum: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_sum` of type `Float`
+  """
+  distanceMiles_sum: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_sum` of type `Int`
+  """
+  durationMinutes_sum: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_avg` of type `Float`
+  """
+  caloriesBurned_avg: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_avg` of type `Float`
+  """
+  distanceMiles_avg: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_avg` of type `Float`
+  """
+  durationMinutes_avg: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_min` of type `Int`
+  """
+  caloriesBurned_min: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_min` of type `Float`
+  """
+  distanceMiles_min: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_min` of type `Int`
+  """
+  durationMinutes_min: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_min` of type `Timestamp`
+  """
+  loggedAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`caloriesBurned_max` of type `Int`
+  """
+  caloriesBurned_max: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`distanceMiles_max` of type `Float`
+  """
+  distanceMiles_max: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`durationMinutes_max` of type `Int`
+  """
+  durationMinutes_max: OrderDirection
+  """
+  ✨ Generated from Field `Workout`.`loggedAt_max` of type `Timestamp`
+  """
+  loggedAt_max: OrderDirection
+}

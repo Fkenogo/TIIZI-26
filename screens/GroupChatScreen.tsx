@@ -1,7 +1,9 @@
-
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { AppView } from '../types';
 import { useTiizi } from '../context/AppContext';
+import { db } from '../firebase';
+import { BroadcastPayload, clearNavState, NAV_STATE_KEYS, readNavState } from '../utils/navigationState';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -9,144 +11,217 @@ interface Props {
   isDark: boolean;
 }
 
-const GroupChatScreen: React.FC<Props> = ({ onNavigate, onToggleDark, isDark }) => {
-  const { state } = useTiizi();
-  const { user } = state;
+interface ChatMessage {
+  id: string;
+  type: 'text' | 'system';
+  text: string;
+  senderId?: string;
+  senderName?: string;
+  senderAvatar?: string;
+  createdAt?: Date;
+}
+
+const formatTime = (value?: Date) => {
+  if (!value) return '';
+  return value.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+};
+
+const GroupChatScreen: React.FC<Props> = ({ onNavigate }) => {
+  const { state, addToast } = useTiizi();
+  const activeGroup = state.groups.find((g) => g.id === state.activeGroupId);
+  const progress = Math.min(100, activeGroup?.challengeProgress ?? state.activeChallenge.progress ?? 0);
+  const challengeTitle = activeGroup?.challengeTitle || state.activeChallenge.title || '';
+  const challengeDay = activeGroup?.challengeDay ?? 0;
+  const challengeTotalDays = activeGroup?.challengeTotalDays ?? 0;
+  const [broadcast, setBroadcast] = useState<BroadcastPayload | null>(null);
+  const [dismissPinned, setDismissPinned] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState('');
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const storedBroadcast = readNavState<BroadcastPayload>(NAV_STATE_KEYS.activeBroadcast);
+    if (!storedBroadcast) return;
+    const isForGroup = !storedBroadcast.groupId || storedBroadcast.groupId === state.activeGroupId;
+    if (isForGroup) {
+      setBroadcast(storedBroadcast);
+      setDismissPinned(false);
+    }
+  }, [state.activeGroupId]);
+
+  useEffect(() => {
+    if (!state.activeGroupId) {
+      setMessages([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'groups', state.activeGroupId, 'messages'),
+      orderBy('createdAt', 'asc'),
+      limit(150)
+    );
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const next = snap.docs.map((docSnap) => {
+        const data = docSnap.data() as any;
+        return {
+          id: docSnap.id,
+          type: data.type || 'text',
+          text: data.text || '',
+          senderId: data.senderId,
+          senderName: data.senderName,
+          senderAvatar: data.senderAvatar,
+          createdAt: data.createdAt?.toDate?.() as Date | undefined,
+        } as ChatMessage;
+      });
+      setMessages(next);
+    });
+
+    return () => unsubscribe();
+  }, [state.activeGroupId]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages]);
+
+  const visiblePinnedBroadcast = useMemo(() => {
+    if (!broadcast) return null;
+    if (!broadcast.pinToTop) return null;
+    if (dismissPinned) return null;
+    return broadcast;
+  }, [broadcast, dismissPinned]);
+
+  const visibleMessages = messages.filter((message) => message.senderId === state.user.authUid);
+
+  const handleSend = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    if (!state.activeGroupId || !state.user.authUid) {
+      addToast('Join a group and sign in before sending messages.', 'error');
+      return;
+    }
+    await addDoc(collection(db, 'groups', state.activeGroupId, 'messages'), {
+      type: 'text',
+      text,
+      senderId: state.user.authUid,
+      senderName: state.user.name,
+      senderAvatar: state.user.avatar,
+      createdAt: serverTimestamp(),
+    }).catch(() => addToast('Failed to send message. Try again.', 'error'));
+    setDraft('');
+  };
 
   return (
     <div className="h-screen bg-background-light dark:bg-background-dark flex flex-col font-display overflow-hidden">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-4 pt-12 pb-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => onNavigate(AppView.GROUP_HOME)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <span className="material-symbols-rounded">arrow_back_ios</span>
-          </button>
-          <div className="flex flex-col">
-            <h1 className="font-black text-base leading-tight">Morning Warriors</h1>
-            <p className="text-[10px] text-primary font-black uppercase tracking-wider">12 active members</p>
-          </div>
-        </div>
-        <button 
-          onClick={() => onNavigate(AppView.PROFILE)}
-          className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm active:scale-90 transition-transform"
+      <header className="sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-4 pt-12 pb-3 flex items-center justify-between shrink-0">
+        <button
+          onClick={() => onNavigate(AppView.GROUP_HOME)}
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <img 
-            src={user.avatar} 
-            alt="Profile" 
-            className="w-full h-full object-cover grayscale"
-          />
+          <span className="material-symbols-rounded">arrow_back_ios</span>
+        </button>
+        <div className="flex flex-col items-center">
+          <h1 className="font-semibold text-base leading-tight">{activeGroup?.name || 'Group Chat'}</h1>
+          <p className="text-[11px] text-slate-500">{activeGroup?.memberCount || 1} members</p>
+        </div>
+        <button
+          onClick={() => onNavigate((`${AppView.GROUP_RULES}?from=${encodeURIComponent(AppView.GROUP_CHAT)}`) as AppView)}
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <span className="material-symbols-rounded">info</span>
         </button>
       </header>
 
-      {/* Challenge Sticky Banner - Refined Padding */}
-      <div className="bg-white dark:bg-slate-800 mx-4 mt-4 rounded-[24px] shadow-sm border border-primary/10 overflow-hidden shrink-0">
+      {visiblePinnedBroadcast && (
+        <div className="bg-primary/10 border border-primary/20 mx-4 mt-4 rounded-3xl shadow-sm overflow-hidden shrink-0">
+          <div className="p-4 flex items-start gap-3">
+            <span className="material-symbols-rounded text-primary">push_pin</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold leading-tight">{visiblePinnedBroadcast.message}</p>
+              <p className="text-xs font-medium text-primary/80 mt-1">{visiblePinnedBroadcast.subtitle || 'Group announcement'}</p>
+            </div>
+            <button
+              onClick={() => {
+                setDismissPinned(true);
+                clearNavState(NAV_STATE_KEYS.activeBroadcast);
+              }}
+              className="size-8 rounded-full bg-primary/15 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+              aria-label="Dismiss pinned announcement"
+            >
+              <span className="material-symbols-rounded text-sm">close</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white dark:bg-slate-800 mx-4 mt-4 rounded-3xl shadow-sm border border-primary/10 overflow-hidden shrink-0">
         <div className="flex flex-col gap-3 p-4">
           <div className="flex gap-6 justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-lg">🏆</div>
-              <p className="text-sm font-black tracking-tight">30-Day Plank Challenge</p>
+              <p className="text-sm font-semibold tracking-tight">{challengeTitle}</p>
             </div>
-            <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-md">Day 12</p>
+            <p className="text-slate-400 text-[11px] font-medium bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-md">
+              Day {challengeDay} / {challengeTotalDays}
+            </p>
           </div>
           <div className="rounded-full bg-slate-100 dark:bg-slate-700 h-1.5 overflow-hidden">
-            <div className="h-full rounded-full bg-primary shadow-[0_0_8px_rgba(211,109,33,0.3)] transition-all duration-1000" style={{ width: '40%' }}></div>
+            <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
 
-      {/* Messages - Improved Spacing and Rhythm */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar pt-6">
-        <div className="flex justify-center mb-2">
-          <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] bg-slate-100/50 dark:bg-slate-800/50 px-4 py-1.5 rounded-full backdrop-blur-sm">October 24 • Today</span>
-        </div>
+      <main className="flex-1 overflow-y-auto p-4 space-y-4 hide-scrollbar pt-6">
+        {visibleMessages.length === 0 && (
+          <div className="text-center text-sm text-slate-400">No messages yet.</div>
+        )}
+        {visibleMessages.map((message) => {
+          if (message.type === 'system') {
+            return (
+              <div key={message.id} className="flex justify-center py-1">
+                <div className="flex items-center gap-2 px-3 py-2 bg-primary/[0.06] rounded-full border border-primary/10">
+                  <span className="text-sm">💪</span>
+                  <p className="text-xs font-medium text-primary/90">{message.text}</p>
+                </div>
+              </div>
+            );
+          }
 
-        {/* Received Message */}
-        <div className="flex items-end gap-3 max-w-[85%] animate-in fade-in slide-in-from-left-4 duration-300">
-          <img 
-            onClick={() => onNavigate(AppView.PROFILE)}
-            alt="Sarah" 
-            className="size-8 rounded-xl object-cover ring-2 ring-primary/5 cursor-pointer shadow-sm mb-0.5" 
-            src="https://picsum.photos/id/64/100/100" 
-          />
-          <div className="flex flex-col gap-1">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-0.5">Sarah</p>
-            <div className="relative bg-white dark:bg-slate-800 px-4 py-3 rounded-[20px] rounded-bl-[4px] shadow-sm border border-slate-50 dark:border-slate-700/50">
-              <p className="text-[13px] font-medium leading-relaxed text-slate-700 dark:text-slate-200">Just finished my 2 minute plank! Who's next? 🔥</p>
-              
-              {/* Reactions */}
-              <div className="absolute -bottom-2 -right-1 flex gap-1 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded-full shadow-md border border-slate-100 dark:border-slate-600 scale-[0.85] origin-bottom-right">
-                <span className="text-xs">💪</span>
-                <span className="text-xs">🔥</span>
+          const isSelf = message.senderId === state.user.authUid;
+          return (
+            <div key={message.id} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] ${isSelf ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                {!isSelf && (
+                  <p className="text-[11px] font-medium text-slate-500 px-1">{message.senderName || 'Member'}</p>
+                )}
+                <div className={`${isSelf ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-100 border border-slate-100 dark:border-slate-700'} px-4 py-3 rounded-2xl shadow-sm`}>
+                  <p className="text-[14px] leading-relaxed">{message.text}</p>
+                </div>
+                <p className="text-[10px] text-slate-400 px-1">{formatTime(message.createdAt)}</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* System Event Message - cleaner pill style */}
-        <div className="flex justify-center py-2">
-          <div className="flex items-center gap-2 px-4 py-2 bg-primary/[0.03] dark:bg-primary/[0.05] rounded-full border border-primary/10">
-             <span className="text-sm">💪</span>
-             <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">
-               Sarah logged 2:00 Plank
-             </p>
-          </div>
-        </div>
-
-        {/* User Sent Message */}
-        <div className="flex flex-col items-end gap-1 ml-auto max-w-[85%] animate-in fade-in slide-in-from-right-4 duration-300">
-          <div className="relative bg-primary text-white px-4 py-3 rounded-[20px] rounded-br-[4px] shadow-lg shadow-primary/10">
-            <p className="text-[13px] font-bold leading-relaxed">I'm halfway through! My core is screaming lol 😅</p>
-            <div className="absolute -bottom-2 -left-1 flex gap-1 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded-full shadow-md border border-slate-100 dark:border-slate-700 scale-[0.85] origin-bottom-left">
-              <span className="text-xs">👏</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 mr-1 mt-0.5">
-            <p className="text-[8px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-widest">Read 11:42 AM</p>
-            <span className="material-symbols-rounded text-primary text-[10px] font-black">done_all</span>
-          </div>
-        </div>
-
-        {/* Image/Media Message */}
-        <div className="flex items-end gap-3 max-w-[85%] animate-in fade-in slide-in-from-left-4 duration-500">
-          <img 
-            onClick={() => onNavigate(AppView.PROFILE)}
-            alt="Coach" 
-            className="size-8 rounded-xl object-cover ring-2 ring-primary/5 cursor-pointer shadow-sm mb-0.5" 
-            src="https://picsum.photos/id/65/100/100" 
-          />
-          <div className="flex flex-col gap-1">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-0.5">Coach Mike</p>
-            <div className="relative bg-white dark:bg-slate-800 p-1.5 rounded-[24px] rounded-bl-[4px] shadow-sm border border-slate-50 dark:border-slate-700/50">
-              <div className="relative overflow-hidden rounded-[20px]">
-                <img className="w-full aspect-[4/3] object-cover transition-transform hover:scale-105 duration-700" src="https://picsum.photos/id/117/400/300" alt="Motivation" />
-                <div className="absolute inset-0 bg-black/5"></div>
-              </div>
-              <p className="text-[13px] font-medium p-2.5 text-slate-600 dark:text-slate-300">Morning motivation from the local park!</p>
-            </div>
-          </div>
-        </div>
+          );
+        })}
+        <div ref={endRef} />
       </main>
 
-      {/* Input Area - Cleaner and more spacious */}
-      <div className="p-4 bg-background-light dark:bg-background-dark border-t border-slate-100 dark:border-slate-800 flex items-center gap-3 shrink-0 pb-10">
-        <button className="text-primary size-11 flex items-center justify-center bg-primary/5 dark:bg-primary/10 rounded-2xl hover:bg-primary/10 transition-all active:scale-90">
-          <span className="material-symbols-rounded text-2xl">add</span>
-        </button>
+      <div className="p-4 bg-background-light dark:bg-background-dark border-t border-slate-100 dark:border-slate-800 flex items-center gap-3 shrink-0 pb-8">
         <div className="flex-1 relative flex items-center group">
-          <input 
-            className="w-full bg-slate-100 dark:bg-slate-800 border-2 border-transparent rounded-[20px] py-3 px-5 pr-12 text-[13px] font-bold focus:ring-4 focus:ring-primary/10 focus:bg-white dark:focus:bg-slate-900 focus:border-primary/20 outline-none transition-all placeholder:text-slate-400 dark:text-white" 
-            placeholder="Send a message..." 
-            type="text" 
+          <input
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-transparent rounded-2xl py-3 px-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-slate-900 focus:border-primary/20 outline-none transition-all placeholder:text-slate-400 dark:text-white"
+            placeholder="Send a message..."
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
           />
-          <button className="absolute right-3.5 text-slate-300 hover:text-primary transition-colors active:scale-90">
-            <span className="material-symbols-rounded text-xl">sentiment_satisfied</span>
-          </button>
         </div>
-        <button className="bg-primary text-white size-11 flex items-center justify-center rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
-          <span className="material-symbols-rounded font-black text-xl">send</span>
+        <button onClick={handleSend} className="bg-primary text-white size-11 flex items-center justify-center rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+          <span className="material-symbols-rounded text-xl">send</span>
         </button>
       </div>
     </div>

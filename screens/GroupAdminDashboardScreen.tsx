@@ -1,12 +1,52 @@
 
-import React from 'react';
-import { AppView } from '../types';
+import React, { useEffect, useState } from 'react';
+import { AppView, JoinRequest } from '../types';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useTiizi } from '../context/AppContext';
+import { useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
 }
 
 const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
+  const { state, approveJoinRequest, denyJoinRequest, addToast } = useTiizi();
+  const { activeGroupId } = state;
+  const activeGroup = state.groups.find((g) => g.id === activeGroupId);
+  const { data: adminSummary } = useFirestoreDoc<{ consistencyRate?: number; memberCount?: number }>(
+    activeGroupId ? ['groups', activeGroupId, 'adminSummary', 'summary'] : []
+  );
+  const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>([]);
+
+  useEffect(() => {
+    if (!activeGroupId) {
+      setPendingRequests([]);
+      return;
+    }
+    const reqQuery = query(
+      collection(db, 'groups', activeGroupId, 'joinRequests'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(reqQuery, (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => {
+        const info = docSnap.data() as any;
+        const createdAt = info.createdAt?.toDate?.() as Date | undefined;
+        return {
+          id: docSnap.id,
+          userId: info.userId || '',
+          userName: info.userName || 'Member',
+          avatar: info.avatar || '/icons/icon-192.svg',
+          note: info.note,
+          status: info.status || 'pending',
+          time: createdAt ? createdAt.toLocaleString() : 'just now'
+        } as JoinRequest;
+      }).filter((req) => req.status === 'pending');
+      setPendingRequests(data);
+    });
+    return () => unsubscribe();
+  }, [activeGroupId]);
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display flex flex-col">
       {/* Header */}
@@ -17,9 +57,9 @@ const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
         >
           <span className="material-icons-round">arrow_back</span>
         </button>
-        <h2 className="text-lg font-black tracking-tight flex-1 text-center">Morning Warriors Admin</h2>
+        <h2 className="text-lg font-black tracking-tight flex-1 text-center">{activeGroup?.name ? `${activeGroup.name} Admin` : 'Group Admin'}</h2>
         <button 
-          onClick={() => onNavigate(AppView.SETTINGS)}
+          onClick={() => onNavigate(AppView.ADMIN_ENGAGEMENT)}
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <span className="material-icons-round">settings</span>
@@ -37,11 +77,11 @@ const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
             <div className="space-y-2">
               <div className="flex items-center gap-2.5 text-slate-500 dark:text-slate-400">
                 <span className="material-icons-round text-primary text-lg">analytics</span>
-                <p className="text-sm font-bold">78% Overall Consistency</p>
+                <p className="text-sm font-bold">{adminSummary?.consistencyRate ?? 0}% Overall Consistency</p>
               </div>
               <div className="flex items-center gap-2.5 text-slate-500 dark:text-slate-400">
                 <span className="material-icons-round text-primary text-lg">group</span>
-                <p className="text-sm font-bold">42 Total Members</p>
+                <p className="text-sm font-bold">{adminSummary?.memberCount ?? activeGroup?.memberCount ?? 0} Total Members</p>
               </div>
             </div>
           </div>
@@ -59,26 +99,38 @@ const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               onClick={() => onNavigate(AppView.ADMIN_PENDING_REQUESTS)}
               className="bg-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-black tracking-widest hover:bg-primary/30 transition-colors"
             >
-              2 NEW
+              {pendingRequests.length} NEW
             </button>
           </div>
           <div className="space-y-3">
-            {[
-              { name: 'Alex Rivera', time: '2h ago', img: 'https://picsum.photos/id/64/100/100' },
-              { name: 'Jordan Smith', time: '5h ago', img: 'https://picsum.photos/id/65/100/100' }
-            ].map((req, i) => (
-              <div key={i} className="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-50 dark:border-slate-800">
-                <img className="size-12 rounded-2xl object-cover ring-2 ring-primary/10" src={req.img} alt={req.name} />
+            {pendingRequests.length === 0 && (
+              <div className="text-xs text-slate-400">No pending requests.</div>
+            )}
+            {pendingRequests.slice(0, 2).map((req) => (
+              <div key={req.id} className="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-50 dark:border-slate-800">
+                <img className="size-12 rounded-2xl object-cover ring-2 ring-primary/10" src={req.avatar} alt={req.userName} />
                 <div className="flex-1">
-                  <p className="font-black text-sm">{req.name}</p>
+                  <p className="font-black text-sm">{req.userName}</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{req.time}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="size-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-400">
+                  <button
+                    onClick={async () => {
+                      if (!activeGroupId) return;
+                      await denyJoinRequest(activeGroupId, req.id);
+                      setPendingRequests((prev) => prev.filter((r) => r.id !== req.id));
+                    }}
+                    className="size-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-400"
+                  >
                     <span className="material-icons-round text-sm">close</span>
                   </button>
                   <button 
-                    onClick={() => onNavigate(AppView.ADMIN_PENDING_REQUESTS)}
+                    onClick={async () => {
+                      if (!activeGroupId) return;
+                      await approveJoinRequest(activeGroupId, req.id, req.userId);
+                      setPendingRequests((prev) => prev.filter((r) => r.id !== req.id));
+                      addToast('User approved.', 'success');
+                    }}
                     className="px-4 h-10 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20"
                   >
                     Accept
@@ -87,6 +139,39 @@ const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Support Requests */}
+        <section className="px-1">
+          <button
+            onClick={() => onNavigate(AppView.ADMIN_SUPPORT_REQUESTS)}
+            className="w-full flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <span className="material-icons-round text-primary text-3xl">volunteer_activism</span>
+              <div className="text-left">
+                <p className="font-black text-sm uppercase tracking-tight">Support Requests</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Review and approve</p>
+              </div>
+            </div>
+            <span className="material-icons-round text-slate-300">chevron_right</span>
+          </button>
+        </section>
+
+        <section className="px-1">
+          <button
+            onClick={() => onNavigate(AppView.ADMIN_EXERCISE_ENGINE)}
+            className="w-full flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <span className="material-icons-round text-primary text-3xl">fact_check</span>
+              <div className="text-left">
+                <p className="font-black text-sm uppercase tracking-tight">Exercise Engine Check</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Validate schema and load status</p>
+              </div>
+            </div>
+            <span className="material-icons-round text-slate-300">chevron_right</span>
+          </button>
         </section>
 
         {/* Action: Broadcast */}
@@ -103,6 +188,23 @@ const GroupAdminDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               </div>
             </div>
             <span className="material-icons-round text-primary/40">send</span>
+          </button>
+        </section>
+
+        {/* Member Directory */}
+        <section className="px-1">
+          <button
+            onClick={() => onNavigate(AppView.GROUP_MEMBER_DIRECTORY)}
+            className="w-full flex items-center justify-between p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <span className="material-icons-round text-primary text-3xl">group</span>
+              <div className="text-left">
+                <p className="font-black text-sm uppercase tracking-tight">Member Directory</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Search and manage members</p>
+              </div>
+            </div>
+            <span className="material-icons-round text-slate-300">chevron_right</span>
           </button>
         </section>
 

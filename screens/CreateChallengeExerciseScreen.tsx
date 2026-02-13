@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppView } from '../types';
-import { EXERCISES } from '../data/exercises';
+import { useCatalogExercises } from '../utils/useCatalogData';
 import { useTiizi } from '../context/AppContext';
+import { useFirestoreCollection } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -11,9 +12,8 @@ interface Props {
 
 const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) => {
   const { addToast } = useTiizi();
-  const [activities, setActivities] = useState<any[]>([
-    { exId: 'plank', metric: 'Seconds', target: '60' }
-  ]);
+  const { items: exercises, loading } = useCatalogExercises();
+  const [activities, setActivities] = useState<any[]>([]);
   const [charityEnabled, setCharityEnabled] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -23,17 +23,21 @@ const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) 
   const [suggestedAmount, setSuggestedAmount] = useState('');
   const [contributionTiming, setContributionTiming] = useState('Upon Completion');
 
-  const categories = Array.from(new Set(EXERCISES.map(e => e.category)));
-  const metrics = ['Seconds', 'Sets', 'Reps', 'Minutes', 'Hours', 'Kilometers'];
+  const categories = Array.from(new Set(exercises.map(e => e.category))).filter(Boolean);
+  const { items: metricItems } = useFirestoreCollection<{ id: string; label?: string }>(['challengeMetrics']);
+  const metrics = useMemo(
+    () => metricItems.map((item) => item.label || item.id).filter(Boolean),
+    [metricItems]
+  );
 
   const getSmartMetric = (exId: string): string => {
-    const ex = EXERCISES.find(e => e.id === exId);
-    if (!ex) return 'Reps';
+    const ex = exercises.find(e => e.id === exId);
+    if (!ex) return metrics[0] || 'Reps';
     const name = ex.name.toLowerCase();
-    if (name.includes('plank') || name.includes('hold') || name.includes('sit')) return 'Seconds';
-    if (name.includes('push-up')) return 'Sets';
-    if (name.includes('run') || name.includes('walk') || name.includes('skater') || name.includes('hop')) return 'Kilometers';
-    return 'Reps';
+    if (name.includes('plank') || name.includes('hold') || name.includes('sit')) return metrics.find((m) => m.toLowerCase() === 'seconds') || metrics[0] || 'Seconds';
+    if (name.includes('push-up')) return metrics.find((m) => m.toLowerCase() === 'sets') || metrics[0] || 'Sets';
+    if (name.includes('run') || name.includes('walk') || name.includes('skater') || name.includes('hop')) return metrics.find((m) => m.toLowerCase() === 'kilometers') || metrics[0] || 'Kilometers';
+    return metrics.find((m) => m.toLowerCase() === 'reps') || metrics[0] || 'Reps';
   };
 
   const addActivity = (exId: string) => {
@@ -87,7 +91,7 @@ const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) 
               </button>
             </div>
             {activities.map((act, idx) => {
-              const exercise = EXERCISES.find(e => e.id === act.exId);
+              const exercise = exercises.find(e => e.id === act.exId);
               return (
                 <div key={idx} className="bg-white dark:bg-slate-800 p-8 rounded-[40px] shadow-sm border border-slate-50 dark:border-slate-800 space-y-6 relative animate-in zoom-in-95 duration-300">
                   <button 
@@ -99,7 +103,7 @@ const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) 
                   
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D36D21] ml-1">Activity {idx + 1}</p>
-                    <h4 className="text-2xl font-black px-1 dark:text-white tracking-tight leading-none">{exercise?.name}</h4>
+                    <h4 className="text-2xl font-black px-1 dark:text-white tracking-tight leading-none">{exercise?.name || 'Exercise'}</h4>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 pt-2">
@@ -241,6 +245,11 @@ const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) 
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 space-y-4 hide-scrollbar">
+              {!loading && exercises.length === 0 && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                  No exercises found in Firestore catalog.
+                </div>
+              )}
               {categories.map((cat) => (
                 <div key={cat} className="overflow-hidden">
                   <button 
@@ -257,7 +266,7 @@ const CreateChallengeExerciseScreen: React.FC<Props> = ({ onNavigate, isDark }) 
                   
                   {expandedCategory === cat && (
                     <div className="grid grid-cols-1 gap-2 mt-2 px-1 animate-in slide-in-from-top-2 duration-300">
-                      {EXERCISES.filter(e => e.category === cat).map(ex => (
+                      {exercises.filter(e => e.category === cat).map(ex => (
                         <button 
                           key={ex.id}
                           onClick={() => addActivity(ex.id)}

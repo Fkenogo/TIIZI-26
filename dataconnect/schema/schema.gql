@@ -1,0 +1,39 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  bio: String
+}
+
+type Group @table {
+  name: String!
+  createdAt: Timestamp!
+  owner: User!
+  description: String
+  groupGoal: String
+}
+
+type Membership @table(key: ["user", "group"]) {
+  user: User!
+  group: Group!
+  joinedAt: Timestamp!
+}
+
+type Workout @table {
+  user: User!
+  group: Group
+  workoutType: String!
+  durationMinutes: Int!
+  loggedAt: Timestamp!
+  distanceMiles: Float
+  caloriesBurned: Int
+  notes: String
+}
+
+type Comment @table {
+  user: User!
+  workout: Workout!
+  content: String!
+  createdAt: Timestamp!
+}

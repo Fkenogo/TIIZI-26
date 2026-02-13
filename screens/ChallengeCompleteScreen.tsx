@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppView } from '../types';
+import { useFirestoreDoc } from '../utils/useFirestore';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -9,11 +10,12 @@ interface Props {
 }
 
 const ChallengeCompleteScreen: React.FC<Props> = ({ onNavigate, onToggleDark, isDark }) => {
-  const [selectedAmount, setSelectedAmount] = useState<number>(1000);
+  const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [frequency, setFrequency] = useState('One-time');
 
-  const presets = [500, 1000, 2000, 3000, 4000, 5000, 10000];
-  const frequencies = ['One-time', 'Monthly', 'Annual', 'Goal-triggered'];
+  const { data: donationConfig } = useFirestoreDoc<{ presets?: number[]; frequencies?: string[] }>(['config', 'donations']);
+  const presets = useMemo(() => donationConfig?.presets || [], [donationConfig]);
+  const frequencies = useMemo(() => donationConfig?.frequencies || [], [donationConfig]);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display flex flex-col relative overflow-x-hidden text-slate-900 dark:text-white">
@@ -95,6 +97,9 @@ const ChallengeCompleteScreen: React.FC<Props> = ({ onNavigate, onToggleDark, is
                     {f}
                   </button>
                 ))}
+                {frequencies.length === 0 && (
+                  <p className="text-xs text-slate-400">No frequency options configured.</p>
+                )}
              </div>
           </div>
 

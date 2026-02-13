@@ -10,7 +10,13 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+reports/playwright-audit
+playwright-report
+test-results
 *.local
+.env
+.env.*
+.firebase
 
 # Editor directories and files
 .vscode/*

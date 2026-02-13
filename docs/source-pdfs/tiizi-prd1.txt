@@ -1,0 +1,574 @@
+Tiizi MVP PRODUCT
+REQUIREMENTS DOCUMENT
+(PRD)
+1. Product Overview
+Product Name: Tiizi
+Meaning: Swahili slang for “Workout”
+Product Type: Group-based fitness & wellbeing app
+Primary Market (MVP): Kenyan middle-aged friends (former college mates)
+Platform: Mobile (iOS-first, Android-ready)
+Build Approach: No-code (FlutterFlow / Bubble)
+AI Usage: None in MVP
+
+2. Product Vision
+Tiizi turns individual workouts into group accountability, while extending support
+beyond fitness into wellbeing, mutual aid, and community support.
+No subscriptions.
+No locked features.
+Just people supporting each other.
+
+3. Core Principles (Non-Negotiable)
+Group > individual
+Manual logging is intentional
+Bodyweight workouts first
+Accountability through visibility
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+1
+
+Donations are optional, never required
+Tiizi facilitates — it does not manage money or outcomes
+
+4. Primary User Flow
+1. User creates or joins a group
+2. Invites friends via link
+3. Group selects exercises or a workout plan
+4. Admin starts a challenge
+5. Members log workouts manually
+6. Progress appears instantly in group feed
+7. Chat, reactions, and comments reinforce accountability
+8. Streaks, rankings, and milestones trigger accountability
+9. Milestones trigger celebration and optional donation prompts
+
+5. User Roles
+Member
+Join groups and challenges
+Log workouts
+View progress
+Chat and engage socially - React/comment
+Donate optionally
+Follow other members
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+2
+
+Group Admin
+Create and manage groups
+Create challenges
+Select workout plans
+Enable fundraising options
+
+6. Groups
+Create / join groups
+Public or private
+Invite via link
+Group profile (name, description, members)
+Multiple challenge per group possible
+Group feed + group chat
+Group history
+
+7. Exercise Library (Built-In)
+Tiizi ships with a rich, expandable bodyweight exercise library, including:
+
+Categories
+Core & Planks
+Upper Body
+Lower Body
+Cardio / Dynamic
+Stretching & Mobility
+
+Exercise Properties
+Each exercise includes:
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+3
+
+Name
+Category
+Description (how to perform)
+Unit type:
+Time (seconds/minutes)
+Reps
+Difficulty level (Beginner / Intermediate / Advanced)
+Manual logging enabled
+Bodyweight exercises are primary.
+Walking / running are secondary and phone-tracked.
+
+7.1 Exercise Categories
+Plank Variations
+1. Plank Right (partially visible at the top): Lie on your right side with your legs
+straight and feet stacked. Prop yourself up on your right forearm or hand,
+lifting your hips so your body forms a straight line. This isometric move
+primarily targets the obliques and core stability.
+2. Leg Up Side Plank Left: Start in a side plank on your left side. Once stable, lift
+your top (right) leg toward the ceiling while keeping it straight. This variation
+increases the intensity for your core and engages the hip abductors.
+3. Leg Up Side Plank Right: Perform a side plank on your right side and lift your
+top (left) leg. This helps balance muscle development on both sides of the
+body while challenging your coordination.
+4. Left Side Plank with Arm Raised: While holding a side plank on your left arm,
+extend your right arm straight up toward the ceiling. This "T" shape helps
+open up the chest and further challenges your balance and core engagement.
+5. Right Side Plank with Arm Raised: Perform a side plank on your right arm and
+reach your left arm vertically. This exercise strengthens the shoulders and
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+4
+
+obliques while improving overall body alignment.
+6. Side Plank with Left Leg Raised: In a right-side plank position, lift your left leg
+straight up. This move focuses on the lateral chain, strengthening the side of
+the torso and the outer hip.
+7. Side Plank with Right Leg Raised: While in a left-side plank, raise your right
+leg. This advanced movement requires significant core strength and stability
+to keep the hips from sagging.
+8. Push Up Hold: Get into a standard push-up position and lower your body until
+your chest is just above the floor and your elbows are at a 90-degree angle.
+Hold this bottom position to build immense isometric strength in the chest,
+shoulders, and triceps.
+
+Side Plank Variations
+Kneeling Side Plank Left: Support your weight on your left forearm and left
+knee (bent at 90 degrees), lifting your hips to form a straight line from head to
+knees. This is a great modification for building initial side-core strength.
+Kneeling Side Plank Right: Perform the kneeling plank on your right side. It
+targets the right obliques while providing more stability than a full side plank.
+Leg Up Side Plank Left: From a standard side plank on your left forearm, lift
+your right leg straight up towards the ceiling. This significantly increases the
+challenge for the hip abductors and core.
+Leg Up Side Plank Right: Perform the leg-up variation on your right forearm,
+lifting your left leg. This helps identify and correct strength imbalances
+between sides.
+Left Side Plank with Arm Raised: In a side plank on your left arm, extend your
+right arm vertically. This improves shoulder stability and balance.
+Right Side Plank with Arm Raised: Hold a side plank on your right arm and
+reach your left arm up. This opens the chest and engages the entire lateral
+chain.
+Side Plank with Left Leg Raised: While in a side plank on your right side, lift
+your left leg. This move emphasizes outer thigh and glute strength alongside
+the obliques.
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+5
+
+High Plank Variations
+Leg Raised Plank Right: From a high plank (push-up) position, lift your right
+leg straight back and up without arching your lower back. This engages the
+glutes and hamstrings.
+Diagonal Plank Hold Left: From a high plank, simultaneously lift your left arm
+and right leg until they are parallel to the floor. This is an advanced balance
+and stability exercise.
+Diagonal Plank Hold Right: Lift your right arm and left leg from a high plank.
+This "bird-dog" variation in a plank position requires intense core tension.
+Plank with Left Arm Lift: Hold a forearm plank and extend your left arm
+straight forward. This forces the rest of your core to work harder to prevent
+the body from rotating.
+Plank with Right Arm Lift: Perform the arm lift with your right arm from a
+forearm plank. It builds shoulder and rotational core strength.
+Single Left Leg Plank: Hold a standard forearm plank while keeping your left
+foot lifted off the floor. This shifts more load onto the remaining three points of
+contact.
+Single Right Leg Plank: Hold a forearm plank with your right foot lifted. This is
+a simple but effective way to increase plank intensity.
+
+Core and Plank Stability
+Knee Plank: A forearm plank where you rest on your knees instead of your
+toes. It is the fundamental starting point for core training.
+Reverse Plank: Sit with legs extended and hands behind you, then lift your
+hips toward the ceiling. This targets the posterior chain: glutes, hamstrings,
+and lower back.
+Reverse Plank with Left Leg Raised: While holding a reverse plank, lift your
+left leg straight up. This adds dynamic load to the supporting right leg and
+glute.
+Reverse Plank with Right Leg Raised: Lift your right leg during a reverse plank
+to challenge the left side of your posterior chain.
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+6
+
+Plank and Reach Left: From a high plank on your hands, reach your left arm
+forward. This trains anti-rotational core stability.
+Plank and Reach Right: Reach your right arm forward from a high plank. Focus
+on keeping your hips level with the floor throughout the movement.
+Leg Raised Plank Left: From a high plank, lift your left leg straight back to
+engage the posterior muscles while maintaining a strong core.
+
+Upper Body and Full Body Stability
+Modified Push-Up Low Hold: On your knees, lower yourself into a push-up
+and hold the position at the bottom. This builds great isometric strength in the
+chest and arms.
+Standing Biceps Stretch Left: Extend your left arm back and rotate the palm
+away from your body, perhaps using a wall for leverage, to stretch the front of
+the upper arm.
+Standing Biceps Stretch Right: Repeat the stretch for your right arm to
+maintain flexibility in the biceps and shoulders.
+Seated Butterfly Stretch: Sit with the soles of your feet together and let your
+knees drop outward. This stretch is excellent for opening up the hips and inner
+thighs.
+Squat Reach Ups: Perform a standard squat, and as you stand, reach both
+arms overhead toward the ceiling in one fluid motion.
+Wide Arm Plank: A high plank position with your hands placed significantly
+wider than your shoulders, putting more emphasis on the outer chest.
+Straight Arm Knee Plank: A high plank on your hands with your knees on the
+ground. This is a common starting position for learning proper push-up form.
+
+Lower Body and Flexibility
+Left Quad Stretch with Wall: Standing on one leg near a wall for balance, grab
+your left foot behind you and pull it toward your glute to stretch the front of the
+thigh.
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+7
+
+Right Quad Stretch with Wall: Perform the same quadriceps stretch for the
+right leg.
+Lying Butterfly Stretch: Lie on your back with the soles of your feet together,
+letting gravity gently pull your knees toward the floor.
+Standing Side Bend: Reach one arm overhead and lean your torso to the
+opposite side to stretch the obliques and lateral muscles.
+Lying Twist Stretch Left: Lying on your back, bring your knees toward your
+chest and let them fall to the left side to stretch the lower back and outer hip.
+Lying Twist Stretch Right: Let your knees fall to the right side for a spinal twist
+that relieves tension in the lumbar region.
+Alternating Hooks: Standing in an athletic stance, throw controlled "hook"
+punches, rotating your hips and core with each strike.
+Modified Push-Up: Push-ups performed with your knees on the ground to
+reduce the amount of body weight you have to lift.
+
+Stretches and Mobility
+Cobra Stretch: Lying on your stomach, press your upper body up with your
+hands while keeping your hips on the floor to stretch the abdominals and
+chest.
+Kneeling Lunge Stretch Left: Kneel on your right knee with your left foot
+forward, then shift your weight forward to stretch the right hip flexor.
+Kneeling Lunge Stretch Right: Shift forward with your right leg forward to
+stretch the left hip flexor.
+Calf Stretch Left: Stand with your left foot behind you and heel pressed into
+the floor, leaning forward to stretch the lower leg muscles.
+Calf Stretch Right: Repeat for the right leg.
+Triceps Stretch Left: Reach your left hand down your back and use your right
+hand to gently press on the left elbow.
+Triceps Stretch Right: Perform the same stretch for the right triceps.
+
+Spine and Hip Mobility
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+8
+
+Cat Cow Pose: Moving between an arched back (Cow) and a rounded back
+(Cat) while on hands and knees to improve spinal flexibility.
+Chest Stretch: Stand in a doorway or against a wall corner and lean forward
+with an arm braced to stretch the pectoral muscles.
+Child's Pose: Kneel and sit back on your heels while reaching your arms
+forward on the floor. This is a deeply relaxing stretch for the entire back.
+Shoulder Stretch: Pull one arm across your chest with the other arm to stretch
+the posterior deltoid.
+Single Leg Hip Rotation: Stand on one leg and lift the other knee, rotating it in
+circles to improve hip joint mobility.
+Spine Lumbar Twist Stretch Right/Left: Lying on your back, cross one knee
+over your body to the opposite side to gently stretch the spine and hips.
+
+Dynamic Movement and Leg Strength
+High Stepping: March or run in place, bringing your knees up as high as
+possible. This is a great cardio warm-up.
+Side Plank Left: A standard side plank on the left forearm, keeping the body in
+a rigid, straight line from head to heels.
+Wall Sit: Lean your back against a wall and slide down into a seated position
+with thighs parallel to the floor, holding for time to build leg endurance.
+Butt Bridge: Lie on your back and lift your hips toward the ceiling. This is one
+of the best exercises for isolating the glutes.
+Skater Jump: Leap laterally from side to side, landing softly on one foot in a
+motion that mimics a speed skater.
+Side Hop: Perform small, quick jumps from side to side to improve agility and
+lower leg power.
+Butt Kicks: Run in place while actively trying to kick your heels back against
+your glutes to warm up the hamstrings.
+
+Compound Strength Exercises
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+9
+
+Triceps Dips: Using a chair or bench, lower and lift your body weight with your
+arms to target the back of the upper arms.
+Step-Up Onto Chair: Step up onto a sturdy chair or platform with one leg and
+drive through the heel to stand up fully, then step back down.
+Push-Ups: The classic upper body exercise for chest, shoulders, and triceps,
+maintaining a straight-body plank throughout.
+Squats: A fundamental lower body move where you lower your hips back and
+down, keeping your chest up and weight in your heels.
+Push-Up & Rotation: Perform a push-up and, as you return to the top, rotate
+into a side plank with one arm reaching high.
+Lunges: Step forward and lower your back knee toward the ground,
+maintaining an upright torso to work the quads and glutes.
+Side Plank Right: A standard side plank held on the right forearm.
+
+Core Foundation and Warm-ups
+Abdominal Crunches: A focused core move where you lift just your shoulder
+blades off the floor to target the upper rectus abdominis.
+Plank: The foundational core stability exercise, held on the forearms and toes.
+Reverse Crunches: Lying on your back, use your lower abs to curl your hips
+off the floor, bringing your knees toward your chest.
+Bird Dog: From all fours, extend your opposite arm and leg simultaneously to
+improve balance and back strength.
+Bridge: A variation of the butt bridge, focusing on holding a straight line from
+knees to shoulders to engage the glutes.
+Jumping Jacks: A full-body cardio classic that involves jumping feet wide
+while swinging arms overhead.
+Straight-Arm Plank: Also known as a high plank, this is the top position of a
+push-up and builds great shoulder and core endurance.
+
+6.2 Exercise Metadata (Per Exercise)
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+10
+
+8. Workout Plans (Group-Based)
+Prebuilt plans (MVP) and expandable
+Plans attach to group challenges
+No personal plans
+Examples
+30-Day Core & Plank Challenge
+Wall Sit & Squat Endurance Plan
+Upper Body Strength (No Equipment)
+Daily Stretch & Mobility Plan
+Plans define:
+Exercises
+Frequency
+Duration
+Daily targets
+
+9. Challenges
+Challenge Types
+Collective (group vs target)
+Competitive (leaderboard)
+Streak-based
+Time-bound (7 / 30 / 75 days)
+Relay-style (turn-based)
+
+Challenge Setup
+Select exercise(s) or plan
+Set duration
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+11
+
+Set target
+Select challenge type
+Start and end challenge
+Optional: enable fundraising
+
+10. Activity Logging
+Manual Logging (Primary)
+Select exercise
+Enter reps or time
+Optional note
+Timestamped
+
+Phone-Based Tracking (Secondary)
+Walking
+Running
+Each log:
+Updates challenge progress
+Appears in group feed
+Affects streaks, milestones, rankings
+
+11. Progress & Analytics
+Group View
+Progress bar
+Target vs achieved
+Leaderboard (contribution + streak)
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+12
+
+Group streaks
+
+Individual View
+Personal contribution summary
+Active streak
+Personal records
+Challenge history
+
+12. Social & Community Layer (IMPORTANT)
+12.1 Feed & Engagement
+Global feed (optional)
+Group feed
+Activity posts
+Milestone posts
+
+Engagement Actions
+Likes
+Emoji reactions
+Comments
+Shares (within app)
+
+12.2 Following System
+Follow other members
+See followed members’ activity
+No public shaming metrics
+
+12.3 Chat
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+13
+
+Group Chat
+One chat per group
+Text + emojis
+Auto-system messages:
+Logs
+Milestones
+Challenge updates
+
+13. Gamification & Motivation
+Daily streaks
+Badges:
+First workout
+7-day streak
+Challenge completed
+Milestones (25%, 50%, 100%)
+Points (simple counter)
+
+14. Notifications
+Challenge start
+Daily reminder
+Streak at risk
+Relay turn notification - “Your turn” (relay-ready)
+Milestone achieved
+Challenge ending soon
+Donation prompt (optional)
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+14
+
+15. COMMUNITY SUPPORT & DONATIONS
+(NEW CORE)
+15.1 App Support Donations (Platform-Level)
+Purpose: Support Tiizi development
+
+Donation Options
+KES 500
+KES 1,000
+KES 2,000
+KES 3,000
+KES 4,000
+KES 5,000
+KES 10,000
+Custom amount
+
+Frequency
+One-time
+Monthly
+Annual
+Goal-triggered
+
+Triggers
+Challenge completion
+Streak milestones
+Manual “Support Tiizi” action
+No features are locked. Ever.
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+15
+
+15.2 Fundraising Challenges (Group-Level)
+Groups can mark a challenge as:
+“Fitness + Cause”
+
+Setup Fields
+Cause name
+Description
+Suggested contribution (optional)
+Contribution timing
+
+Member Choice
+Join challenge
+Donate or skip
+Log workouts regardless
+Tiizi:
+Tracks pledges
+Displays progress
+Does NOT verify or manage causes
+
+15.3 Group Wellness / Medical Support Funds
+Purpose: Mutual support within trusted groups
+
+MVP-Safe Implementation
+Contribution tracking only
+No wallet
+No fund holding
+No payouts
+Members:
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+16
+
+Pledge amounts
+Log contributions
+Track group goal
+Clear disclaimer shown.
+
+16. Data Model (No-Code Friendly)
+Core tables:
+Users
+Groups
+GroupMembers
+Exercises
+WorkoutPlans
+Challenges
+ActivityLogs
+Posts
+Comments
+Reactions
+Chats
+Messages
+Donations
+GroupFunds
+FundContributions
+Notifications
+
+17. Out of Scope (MVP)
+Live coaching
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+17
+
+Video-heavy workouts
+AI-generated plans
+Wearable dependency
+In-app wallets
+Money disbursement
+
+18. Success Metrics
+Weekly active users
+Logs per user per week
+Challenge completion rate
+Group retention (30 days)
+Donation participation (not amount)
+Reduction in WhatsApp group reliance
+
+19. Why This MVP Is Strong
+Trust-based monetization
+Strong community glue
+Simple to build
+Easy to explain
+Easy to expand later (AI, corporate wellness)
+
+Tiizi MVP PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+18
+
+
